@@ -5,7 +5,7 @@ from agents import Agent, run_demo_loop
 bias_instructions = "For the given text: identify possible bias towards minorities, organizations or political entities"
 sentiment_instructions = "Analyze sentiment in range -2 for most negative to +2 for the most ppositive."
 abuse_instructions = "For the given text, identify possible hate speech, politically incorrect speech, illegal activities, personal information"
-facts_instructions = "For the given text, identify and list verifiable factual claims."
+facts_instructions = "For the given text, identify and list verifiable factual claims. Identify entities that are directly or indirectly quoted."
 purpose_instructions = "Assess the tone and possible intent of author"
 
 bias_agent = Agent(name="bias_agent",instructions=bias_instructions)
@@ -17,6 +17,12 @@ purpose_agent = Agent(name="purpose_agent",instructions=purpose_instructions)
 
 
 content_agent = "Evaluate the given text with all given tools. Write a report from the gathered information."
+
+# TODO check public databases databases of source assesment, e.g. konspiratori.sk
+# TODO check public fact checking databases
+# TODO use multiple fact-checking approaches
+# TODO check information about the text author
+# TODO identify and asses the source of text - newspaper, blog, social media channel
 
 content_agent = Agent(name="content_agemt",instructions=content_agent,tools=[
     bias_agent.as_tool(tool_name="bias_agent",tool_description="Evaluates possible bias in text"),
