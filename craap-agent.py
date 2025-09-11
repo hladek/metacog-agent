@@ -1,85 +1,33 @@
-from openai_agents import Agent, Task, Tool, Observation
-"""
-Generated using Copilot:
 
-Use openai-agents sdk. Write an agent that will automatically asses a given text using CRAAP (credibility, relevance, authority, accuracy, purpose) information assessment methodology.
+import asyncio
+from agents import Agent, run_demo_loop
 
-TODO - test
+bias_instructions = "For the given text: identify possible bias towards minorities, organizations or political entities"
+sentiment_instructions = "Analyze sentiment in range -2 for most negative to +2 for the most ppositive."
+abuse_instructions = "For the given text, identify possible hate speech, politically incorrect speech, illegal activities, personal information"
+facts_instructions = "For the given text, identify and list verifiable factual claims."
+purpose_instructions = "Assess the tone and possible intent of author"
 
-"""
+bias_agent = Agent(name="bias_agent",instructions=bias_instructions)
 
-class CRAAPAssessmentAgent(Agent):
-    """
-    An agent that assesses a given text using the CRAAP methodology:
-    Credibility, Relevance, Authority, Accuracy, Purpose.
-    """
+sentiment_agent = Agent(name="sentiment_agent",instructions=sentiment_instructions)
+abuse_agent = Agent(name="abuse_agent",instructions=abuse_instructions)
+facts_agent = Agent(name="facts_agent",instructions=facts_instructions)
+purpose_agent = Agent(name="purpose_agent",instructions=purpose_instructions)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.tools = [self.craap_tool()]
 
-    def craap_tool(self):
-        """
-        Defines a tool for CRAAP assessment.
-        """
-        def assess(text: str) -> dict:
-            """
-            Given a text, returns a CRAAP assessment.
-            """
-            # Use LLM or rules to assess each criterion
-            def basic_check(criterion, prompt):
-                # This could call LLM or use heuristics
-                response = self.llm(prompt.format(text=text))
-                return response
+content_agent = "Evaluate the given text with all given tools. Write a report from the gathered information."
 
-            return {
-                "Credibility": basic_check(
-                    "Credibility",
-                    "Assess the credibility of the following text: {text}\nIs the author trustworthy? Is the evidence reliable?"
-                ),
-                "Relevance": basic_check(
-                    "Relevance",
-                    "Assess the relevance of the following text for a research context: {text}\nIs the information directly related to the topic?"
-                ),
-                "Authority": basic_check(
-                    "Authority",
-                    "Assess the authority of the source in the following text: {text}\nIs the author or publisher an expert on the topic?"
-                ),
-                "Accuracy": basic_check(
-                    "Accuracy",
-                    "Assess the accuracy of the following text: {text}\nIs the information supported by evidence and free of errors?"
-                ),
-                "Purpose": basic_check(
-                    "Purpose",
-                    "Assess the purpose of the following text: {text}\nIs the intent to inform, to persuade, to sell, or something else? Is there bias?"
-                ),
-            }
+content_agent = Agent(name="content_agemt",instructions=content_agent,tools=[
+    bias_agent.as_tool(tool_name="bias_agent",tool_description="Evaluates possible bias in text"),
+    sentiment_agent.as_tool(tool_name="sentimen_agent",tool_description="Evaluates sentiment in text"),
+    abuse_agent.as_tool(tool_name="abuse_agent",tool_description="Evaluates possible abuse in text"),
+    facts_agent.as_tool(tool_name="facts_agent",tool_description="Identifies factual claims in text"),
+    purpose_agent.as_tool(tool_name="purpose_agent",tool_description="Identifies intent of the author"),
+    ])
 
-        return Tool(
-            name="craap_assessment",
-            description="Assess text using CRAAP methodology",
-            func=assess,
-            input_schema={"text": "string"},
-            output_schema={
-                "Credibility": "string",
-                "Relevance": "string",
-                "Authority": "string",
-                "Accuracy": "string",
-                "Purpose": "string",
-            }
-        )
+async def main() -> None:
+    await run_demo_loop(content_agent)
 
-    def run(self, text: str) -> Observation:
-        """
-        Run CRAAP assessment on input text.
-        """
-        result = self.tools[0](text=text)
-        return Observation(
-            content="CRAAP Assessment",
-            data=result
-        )
-
-# Usage Example:
-# agent = CRAAPAssessmentAgent()
-# assessment = agent.run("Sample text to assess...")
-# print(assessment.data)
+if __name__ == "__main__":
+    asyncio.run(main())
