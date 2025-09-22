@@ -41,7 +41,7 @@ Current time: {current_time}
 
 Your task: Perform a web search with an effective search query to find evidence that could verify or refute the given claim.
 
-Requirements:
+Requirements for the query:
 - Include key entities, names, dates, and specific details from the claim
 - Use search-engine-friendly language (no special characters)
 - Target authoritative sources (news, government, academic, fact-checking sites)
@@ -56,9 +56,10 @@ Examples:
 - Recent claims: Add "latest" or current year when relevant
 
 """
+# TODO - verify and regenerate query
 
-query_generation_agent = Agent(
-    name = "query_generation_agent",
+fact_search_agent = Agent(
+    name = "fact_search_agent",
     tools=[WebSearchTool()],
     model_settings=ModelSettings(tool_choice="required"),
 )
@@ -117,6 +118,10 @@ search_evaluator_agent = Agent(
     instructions=EVIDENCE_EVALUATION_SYSTEM_PROMPT,
     output_type=EvaluationFeedback,
 
+final_verdict_agent = Agent(
+    name="final_verdict_agent",
+    instructions="Your are an information assesment expert. Based on the provided evidence, evaluate and summarize validity of the given facts. "
+)
 
 # https://github.com/openai/openai-agents-python/blob/main/examples/agent_patterns/llm_as_a_judge.py    
 
@@ -130,17 +135,24 @@ async def main():
 
     # Ensure the entire workflow is a single trace
     with trace("Deterministic story flow"):
-        # 1. Generate an outline
-        outline_result = await Runner.run(
-            story_outline_agent,
+        # 1. identify facts. 
+        facts_result = await Runner.run(
+            fact_identification_agent,
             input_prompt,
         )
         print("Outline generated")
 
-        # 2. Check the outline
-        outline_checker_result = await Runner.run(
-            outline_checker_agent,
-            outline_result.final_output,
+        # 2. Check the facts
+        # TODO for each fact
+        # https://github.com/openai/openai-agents-python/tree/main/examples/financial_research_agent
+        fact_search_result = await Runner.run(
+            facts_search_agent,
+            facts_result.final_output,
+        )
+
+        fact_search_evaluation_result = await Runner.run(
+            facts_search_agent,
+            fact_search_result.final_output,
         )
 
         # 3. Add a gate to stop if the outline is not good quality or not a scifi story
@@ -157,7 +169,7 @@ async def main():
 
         # 4. Write the story
         story_result = await Runner.run(
-            story_agent,
+            final_verdict_agent,
             outline_result.final_output,
         )
         print(f"Story: {story_result.final_output}")
