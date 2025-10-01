@@ -18,14 +18,14 @@ Take a step back and think step by step about how to achieve the best possible o
 
 - Deeply analyze the truth claims and arguments being made in the input.
 - Separate the truth claims from the arguments in your mind.
+- List the claim being made in less than 16 words.
 
 # OUTPUT INSTRUCTIONS
 
-- Provide a summary of the argument being made in less than 30 words in a section called ARGUMENT SUMMARY:.
+For each identified claim:
 
-- In a section called TRUTH CLAIMS:, perform the following steps for each:
+1. Print the claim text. Replace each pronoun in claim with actual full proper name.
 
-1. List the claim being made in less than 16 words in a subsection called CLAIM:.
 2. Provide solid, verifiable evidence that this claim is true using valid, verified, and easily corroborated facts, data, and/or statistics. Provide references for each, and DO NOT make any of those up. They must be 100% real and externally verifiable. Put each of these in a subsection called CLAIM SUPPORT EVIDENCE:.
 
 3. Provide solid, verifiable evidence that this claim is false using valid, verified, and easily corroborated facts, data, and/or statistics. Provide references for each, and DO NOT make any of those up. They must be 100% real and externally verifiable. Put each of these in a subsection called CLAIM REFUTATION EVIDENCE:.
@@ -40,14 +40,6 @@ Take a step back and think step by step about how to achieve the best possible o
    F (Definitely False)
 
 6. Provide a list of characterization labels for the claim, e.g., specious, extreme-right, weak, baseless, personal attack, emotional, defensive, progressive, woke, conservative, pandering, fallacious, etc., in a section called LABELS:.
-
-- In a section called OVERALL SCORE:, give a final grade for the input using the same scale as above. Provide three scores:
-
-LOWEST CLAIM SCORE:
-HIGHEST CLAIM SCORE:
-AVERAGE CLAIM SCORE:
-
-- In a section called OVERALL ANALYSIS:, give a 30-word summary of the quality of the argument(s) made in the input, its weaknesses, its strengths, and a recommendation for how to possibly update one's understanding of the world based on the arguments provided.
 
 """
 
