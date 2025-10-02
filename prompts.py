@@ -30,16 +30,18 @@ For each identified claim:
 
 3. Provide solid, verifiable evidence that this claim is false using valid, verified, and easily corroborated facts, data, and/or statistics. Provide references for each, and DO NOT make any of those up. They must be 100% real and externally verifiable. Put each of these in a subsection called CLAIM REFUTATION EVIDENCE:.
 
-4. Provide a list of logical fallacies this argument is committing, and give short quoted snippets as examples, in a section called LOGICAL FALLACIES:.
+4. Provide a list of logical fallacies this claim is committing, and give short quoted snippets as examples, in a section called LOGICAL FALLACIES:.
 
-5. Provide a CLAIM QUALITY score in a section called CLAIM RATING:, that has the following tiers:
+5. Provide a list of characterization labels for the claim, e.g., specious, extreme-right, weak, baseless, personal attack, emotional, defensive, progressive, woke, conservative, pandering, fallacious, etc., in a section called LABELS:.
+
+6. Provide a CLAIM QUALITY score in a section called CLAIM RATING:, that has the following tiers:
    A (Definitely True)
    B (High)
    C (Medium)
    D (Low)
    F (Definitely False)
 
-6. Provide a list of characterization labels for the claim, e.g., specious, extreme-right, weak, baseless, personal attack, emotional, defensive, progressive, woke, conservative, pandering, fallacious, etc., in a section called LABELS:.
+7. Provide overal justification of the claim quality in three sentences. 
 
 """
 

@@ -22,6 +22,8 @@ class Claim(BaseModel):
     cons: str
     falacies: list[str]
     labels: list[str] 
+    quality: str
+    justification: str
 
 
 # https://github.com/BharathxD/ClaimeAI/tree/main/apps/agent/claim_extractor
@@ -75,7 +77,6 @@ async def main():
         # the agent can return a pre-liminary fact evaluation
         # TODO the opriginal claime approach evaluates each sentence in context for existence of a factual claim.
         # this will make the agent mode difficult and expensive.
-        # TODO claims should have resolved co-references
         facts_result = await Runner.run(
             fact_identification_agent,
             input_prompt,
@@ -88,8 +89,7 @@ async def main():
         for claim in facts_result.final_output:
             # https://github.com/openai/openai-agents-python/tree/main/examples/financial_research_agent
             # generate query and search for the claim
-            # TODO - generate multiple queries if necessary
-            # 3. Add a gate to stop or regenerate results are not good quality
+            # TODO - generate multiple queries if necessary Add a gate to stop or regenerate results are not good quality
             fact_search_result = await Runner.run(
                 fact_search_agent,
                 claim.text,
