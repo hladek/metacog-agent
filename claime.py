@@ -95,7 +95,8 @@ async def main():
             )
             print(fact_search_result)
 
-            out.append(claim.text + " " + fact_search_result.final_output.final_verdict + " "+  fact_search_result.final_output.final_justification)
+            out.append(claim.text + " "   + claim.justification + " "+ fact_search_result.final_output.final_verdict )
+#+ " " +  fact_search_result.final_output.final_justification
 
             
         
