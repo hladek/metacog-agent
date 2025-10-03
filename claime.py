@@ -22,9 +22,17 @@ class Claim(BaseModel):
     cons: str
     falacies: list[str]
     labels: list[str] 
-    quality: str
+    verdict: str
     justification: str
 
+class Verdict(BaseModel):
+    verdict: str
+    justification: str
+
+class SearchVerdict(BaseModel):
+    searches: list[Verdict]
+    final_verdict: str
+    final_justification: str
 
 # https://github.com/BharathxD/ClaimeAI/tree/main/apps/agent/claim_extractor
 
@@ -42,19 +50,9 @@ fact_search_agent = Agent(
     tools=[WebSearchTool()],
     instructions=prompts.QUERY_GENERATION_INITIAL_SYSTEM_PROMPT,
     model_settings=ModelSettings(tool_choice="required"),
+    output_type=SearchVerdict,
 )
 
-
-class EvaluationFeedback(BaseModel):
-    feedback: str
-    decision: str
-    #score: Literal["Supported", "Insufficient informationn", "Refuted","Conflicting Evidence"]
-
-search_evaluator_agent = Agent(
-    name="search_evaluator_agent",
-    instructions=prompts.EVIDENCE_EVALUATION_SYSTEM_PROMPT,
-    output_type=EvaluationFeedback,
-)
 
 final_verdict_agent = Agent(
     name="final_verdict_agent",
@@ -72,6 +70,7 @@ async def main():
     input_prompt = input("PLease insert a text with factual claims")
 
     # Ensure the entire workflow is a single trace
+    out = []
     with trace("Deterministic flow"):
         # 1. identify facts. 
         # the agent can return a pre-liminary fact evaluation
@@ -95,17 +94,16 @@ async def main():
                 claim.text,
             )
             print(fact_search_result)
+
+            out.append(claim.text + " " + fact_search_result.final_output.final_verdict + " "+  fact_search_result.final_output.final_justification)
+
             
-            # this might not be necessary
-            # evaluate search results. Do they support or refute the claim?
-            #fact_search_evaluation_result = await Runner.run(
-            #    search_evaluator_agent,
-            #    fact_search_result.final_output,
-            #)
-
-            #print(fact_search_evaluation_result)
-
-        # TODO generate overall evaluation of the text
+        
+        final_verdict_result = await Runner.run(
+                final_verdict_agent,
+                input_prompt + " ".join(out),
+        )
+        print(final_verdict_result)
 
 
 if __name__ == "__main__":
