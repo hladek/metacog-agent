@@ -106,7 +106,7 @@ Examples for query:
 - Events: "Taylor Swift concert cancellation official statement"
 - Recent claims: Add "latest" or current year when relevant
 
-For each result, assess the factual accuracy of the claim based solely on the provided evidence. For each result, reach verdict and provide its justification.
+For each result, assess the factual accuracy of the claim based solely on the provided evidence. For each result, reach verdict and provide its justification. For each result, report name of the source and url.
 
 {VERDICT_CRITERIA}
 

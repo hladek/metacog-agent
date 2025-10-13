@@ -26,6 +26,9 @@ class Claim(BaseModel):
     justification: str
 
 class Verdict(BaseModel):
+    query: str
+    source: str
+    url: str
     verdict: str
     justification: str
 
