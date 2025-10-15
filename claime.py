@@ -135,6 +135,7 @@ async def main():
         
         # for each claim
         # check evidence on web
+        citations = []
         for claim in facts_result.final_output:
             print("-------------")
             print(claim.text)
@@ -165,9 +166,12 @@ async def main():
                 " ".join(zz),
             )
             print(fact_retrieve_result)
-            citations = print_final_output_citations(fact_retrieve_result)
+            dc = []
+            for c in print_final_output_citations(fact_retrieve_result):
+                dc.append((q.source,c[0],c[1]))
+            citations += dc
             result = fact_retrieve_result.final_output
-            out.append(claim.text  + result.verdict + " " + result.justification)
+            out.append(claim.text  + result.verdict + " " + result.justification  + " source: " + q.source )
 
             
         
@@ -177,6 +181,7 @@ async def main():
         )
         print("<<<<<<<<<<")
         print(final_verdict_result)
+        print(citations)
 
 
 if __name__ == "__main__":

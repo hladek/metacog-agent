@@ -124,6 +124,8 @@ The query should be adapted to the information source.
 
 requirements for the sources:
 - Target authoritative sources (news, government, academic, fact-checking sites)
+- Generate multiple distinct sources
+- do not repeat sources
 
 Requirements for the query:
 - Include key entities, names, dates, and specific details from the claim
