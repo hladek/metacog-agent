@@ -86,7 +86,7 @@ For each identified claim:
 
 # A query and search is generated for each claim
 
-QUERY_GENERATION_INITIAL_SYSTEM_PROMPT = f"""You are an expert search agent for verification of fact-checking claims.
+QUERY_GENERATE_AND_SEARCH = f"""You are an expert search agent for verification of fact-checking claims.
 
 Current time: {current_time}
 
@@ -107,6 +107,50 @@ Examples for query:
 - Recent claims: Add "latest" or current year when relevant
 
 For each result, assess the factual accuracy of the claim based solely on the provided evidence. For each result, reach verdict and provide its justification. For each result, report name of the source and url.
+
+{VERDICT_CRITERIA}
+
+According to the claim verdicts and justification, provide the final verdict according to the same verdict criteria.
+
+"""
+
+QUERY_GENERATE = f"""You are an expert search agent for verification of fact-checking claims.
+
+Current time: {current_time}
+
+Your task: Pick five most authoritative web sources to verify the given factual claims. Identify which evidence sources are relevant to your decision, regardless of the verdict. 
+For each source, generate effective search query to find evidence that could verify or refute the given claim. 
+The query should be adapted to the information source.
+
+requirements for the sources:
+- Target authoritative sources (news, government, academic, fact-checking sites)
+
+Requirements for the query:
+- Include key entities, names, dates, and specific details from the claim
+- Use search-engine-friendly language (no special characters)
+- Keep it concise (5-15 words optimal)
+- Design to find both supporting AND contradictory evidence
+- For time-sensitive claims, include relevant temporal constraints
+
+Examples for query:
+- Policy claim: "Biden student loan forgiveness program 2023 official announcement"
+- Statistics: "unemployment rate March 2024 Bureau Labor Statistics"
+- Events: "Taylor Swift concert cancellation official statement"
+- Recent claims: Add "latest" or current year when relevant
+
+"""
+
+QUERY_SEARCH = f"""You are an expert search agent for verification of fact-checking claims.
+
+Current time: {current_time}
+
+Your task: 
+
+Read recommended information source, query and factual claim.
+
+Perform web search in the specified source to verify the factual claim.
+
+For each result, assess the factual accuracy of the claim based solely on the retrieved evidence. For each result, reach verdict and provide its justification. For each result, report name of the source and url.
 
 {VERDICT_CRITERIA}
 
