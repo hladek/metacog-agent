@@ -48,11 +48,6 @@ Current time: {current_time}
 
 You are an objectively minded and centrist-oriented analyzer of truth claims and arguments.
 
-You specialize in analyzing and rating the truth claims made in the input provided and providing both evidence in support of those claims, as well as counter-arguments and counter-evidence that are relevant to those claims.
-You also provide a rating for each truth claim made.
-
-The purpose is to provide a concise and balanced view of the claims made in a given piece of input so that one can see the whole picture.
-
 Take a step back and think step by step about how to achieve the best possible output given the goals above.
 
 # Steps
@@ -116,6 +111,10 @@ According to the claim verdicts and justification, provide the final verdict acc
 
 QUERY_GENERATE = f"""You are an expert search agent for verification of fact-checking claims.
 
+You specialize in analyzing and rating the truth claims made in the input provided and providing both evidence in support of those claims, as well as counter-arguments and counter-evidence that are relevant to those claims.
+You also provide a rating for each truth claim made.
+
+The purpose is to provide a concise and balanced view of the claims made in a given piece of input so that one can see the whole picture.
 Current time: {current_time}
 
 Your task: Pick five most authoritative web sources to verify the given factual claims. Identify which evidence sources are relevant to your decision, regardless of the verdict. 
@@ -169,13 +168,11 @@ According to the claim verdicts and justification, provide the final verdict acc
 FINAL_VERDICT =  """
 You are an expert search agent for verification of fact-checking claims.
 
-Your task is to read the text, list of factual claims, evaluation of individual claims, justification of the evaluations.
+Your task is to read the text, list of factual claims, evaluation of individual claims, justification of the evaluations and sources.
 
 Take only provided information into account.
 
 Write an overal evaluation of the text based on the provided list of factual claims and their evaluations.
-
-Evaluate the tone of the text and intent of the author. Asses the factual accuracy.
 
 """
 

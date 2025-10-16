@@ -171,7 +171,7 @@ async def main():
                 dc.append((q.source,c[0],c[1]))
             citations += dc
             result = fact_retrieve_result.final_output
-            out.append(claim.text  + result.verdict + " " + result.justification  + " source: " + q.source )
+            out.append("claim: " + claim.text  + "verdict:" + result.verdict + " justification: " + result.justification  + " source: " + q.source  + "---")
 
             
         
