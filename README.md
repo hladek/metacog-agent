@@ -1,48 +1,15 @@
-# MetaCog Agent
+The agent should help to asses use a given internet resource - news page or blog.
 
-A prototype of an agent to help with unknown information.
+It retrieves the page and page meta information
 
-It provides a collection of agents designed to assist in the detection of disinformation and to foster metacognitive skills. These agents use various techniques from natural language processing, machine learning, and cognitive science to analyze, evaluate, and enhance information literacy.
+To evaluate Corrency and Relevance, the agent have to ask about the research question.
 
-## Features
+To evaluate authority it should search about the author and about the publisher.
 
-- **Extensible Agent Architecture:**  
-  Easily add or modify agents for new tasks or data sources.
-- **Disinformation Detection:**  
-  Tools and pipelines to identify potentially misleading or false information in text.
-- **Metacognitive Guidance:**  
-  Components that help users reflect on their cognitive processes when evaluating information.
+To evaluate Accuracy: the agent should observe the blog hyperlinks and citations. It chould pick and evaluate several factual claims
+i
+To evaluate Purpose, the agent should identify the tone and intent of the text. It should identify bias in text towards social and political groups.
 
-
-## Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/hladek/metacog-agent.git
-cd metacog-agent
-```
-
-Create and activate a virtual environment.
-
-Install dependencies:
-
-```bash
-pip install openai-agents
-```
-
-## Usage
-
-Set your OpenAI APi key
-
-```
-export OPENAI_API_KEY=zzzzzz
-```
-
-Run code
-```
-python craap-agent.py
-```
 
 
 
