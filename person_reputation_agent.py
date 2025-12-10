@@ -140,17 +140,28 @@ async def analyze_person(name_affiliation: str):
     out = []
     results = []
     with trace("Deterministic flow"):
-        
+        authority_result = await Runner.run(
+            authority_search_agent,
+            name_affiliation
+        )
+        results.append(authority_result.final_output)
+
+async def analyze_person_without_affiliation(name: str):
+
+    # Ensure the entire workflow is a single trace
+    out = []
+    results = []
+    with trace("Deterministic flow"):
         bio_result = await Runner.run(
             bio_search_agent,
-            name_affiliation,
+            name,
         )
         for person in bio_result.final_output:
             authority_result = await Runner.run(
                 authority_search_agent,
                 person.full_name + " " +  person.current_affiliation,
             )
-            results.append(authority_result)
+            results.append(authority_result.final_output)
         return results
 
 

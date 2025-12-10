@@ -77,7 +77,7 @@ async def analyze_publisher(name:str):
             authority_search_agent,
             name,
         )
-        return bio_result
+        return bio_result.final_output
 
 async def main():
     input_prompt = input("PLease insert a name of a publisher")

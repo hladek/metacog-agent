@@ -44,7 +44,44 @@ if st.button("Analyze", type="primary"):
                 with tab1:
                     st.subheader("Blog Metadata")
                     if metadata:
-                        st.json(metadata)
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            st.write("**📰 Article Information**")
+                            if metadata.get('title'):
+                                st.write(f"**Title:** {metadata['title']}")
+                            if metadata.get('author'):
+                                st.write(f"**Author:** {metadata['author']}")
+                            if metadata.get('date'):
+                                st.write(f"**Published:** {metadata['date']}")
+                            if metadata.get('description'):
+                                st.write(f"**Description:** {metadata['description']}")
+                            if metadata.get('pagetype'):
+                                st.write(f"**Page Type:** {metadata['pagetype']}")
+                        
+                        with col2:
+                            st.write("**🌐 Source Information**")
+                            if metadata.get('url'):
+                                st.write(f"**URL:** {metadata['url']}")
+                            if metadata.get('hostname'):
+                                st.write(f"**Hostname:** {metadata['hostname']}")
+                            if metadata.get('sitename'):
+                                st.write(f"**Site Name:** {metadata['sitename']}")
+                            if metadata.get('image'):
+                                st.write(f"**Featured Image:**")
+                                st.image(metadata['image'], use_container_width=True)
+                            if metadata.get('filedate'):
+                                st.write(f"**Retrieved:** {metadata['filedate']}")
+                        
+                        if metadata.get('categories') or metadata.get('tags'):
+                            st.write("**🏷️ Categories & Tags**")
+                            if metadata.get('categories'):
+                                st.write(f"**Categories:** {', '.join(metadata['categories']) if metadata['categories'] else 'None'}")
+                            if metadata.get('tags'):
+                                st.write(f"**Tags:** {', '.join(metadata['tags']) if metadata['tags'] else 'None'}")
+                        
+                        with st.expander("View Raw Metadata"):
+                            st.json(metadata)
                     else:
                         st.info("No metadata available")
                 
