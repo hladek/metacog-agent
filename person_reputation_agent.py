@@ -143,7 +143,7 @@ async def analyze_person(name_affiliation: str):
         
         bio_result = await Runner.run(
             bio_search_agent,
-            input_prompt,
+            name_affiliation,
         )
         for person in bio_result.final_output:
             authority_result = await Runner.run(
