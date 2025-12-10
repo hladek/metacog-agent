@@ -134,12 +134,11 @@ authority_search_agent = Agent(
 )
 
 
-
-async def main():
-    input_prompt = input("PLease insert a name of a person")
+async def analyze_person(name_affiliation: str):
 
     # Ensure the entire workflow is a single trace
     out = []
+    results = []
     with trace("Deterministic flow"):
         
         bio_result = await Runner.run(
@@ -151,10 +150,15 @@ async def main():
                 authority_search_agent,
                 person.full_name + " " +  person.current_affiliation,
             )
-            print("=======")
-            print(person.current_affiliation)
-            print(">>>>Ideintified facts")
-            print(authority_result)
+            results.append(authority_result)
+        return results
+
+
+async def main():
+    input_prompt = input("PLease insert a name  and affiliation of a person")
+    results = await analyze_person(input_prompt)
+    print("=======")
+    print(results)
 
 if __name__ == "__main__":
     asyncio.run(main())

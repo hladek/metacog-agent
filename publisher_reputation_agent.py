@@ -68,21 +68,22 @@ authority_search_agent = Agent(
 #    output_type=AuthorityVerdict,
 )
 
-
-
-async def main():
-    input_prompt = input("PLease insert a name of a publisher")
-
+async def analyze_publisher(name:str):
     # Ensure the entire workflow is a single trace
     out = []
     with trace("Deterministic flow"):
         
         bio_result = await Runner.run(
             authority_search_agent,
-            input_prompt,
+            name,
         )
-        print("=======")
-        print(bio_result)
+        return bio_result
+
+async def main():
+    input_prompt = input("PLease insert a name of a publisher")
+    result = await analyze_publisher(input_prompt)
+    print("=======")
+    print(result)
 
 if __name__ == "__main__":
     asyncio.run(main())
