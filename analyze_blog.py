@@ -133,9 +133,11 @@ Analyze the following blog content  to identify:
 class BlogMetadata(BaseModel):
     author_name: str
     is_anonymous: bool
+    author_affiliation: str
     blog_name: str
     publisher_name: str
     publishing_date: str
+    summary: str
 
 
 async def extract_blog_info_with_llm(text: str) -> BlogMetadata:
@@ -152,9 +154,11 @@ async def extract_blog_info_with_llm(text: str) -> BlogMetadata:
     Analyze the following blog content to identify:
     1. The name of the author (person who wrote the article)
     2. If person name is real or pseudonym
-    3. The name of the blog (title of the blog site or section)
-    4. The name of the publisher (organization/company publishing the blog)
-    5. Date of the publishing
+    3. Affiliation of the author (employee and professional position of the author)
+    4. The name of the blog (title of the blog site or section)
+    5. The name of the publisher (organization/company publishing the blog)
+    6. Date of the publishing
+    7. Short summary of the blog.
     
     If any information is not available, use "Unknown".
 
@@ -215,10 +219,12 @@ async def analyze_blog(url):
     print("Extracting blog information using LLM...")
     blog_info = await extract_blog_info_with_llm("URL: " + str(metadata) + "\n\n" + (blog_text or ""))
     print("\nAuthor Name:", blog_info.author_name)
+    print("\nAuthor Affiliation:", blog_info.author_affiliation)
     print("Blog Name:", blog_info.blog_name)
     print("Is anonymous:", blog_info.is_anonymous)
     print("Publishing date:", blog_info.publishing_date)
     print("Publisher Name:", blog_info.publisher_name)
+    print("Summary:", blog_info.summary)
 
     from person_reputation_agent import analyze_person 
     from publisher_reputation_agent import analyze_publisher 
@@ -234,7 +240,7 @@ async def analyze_blog(url):
     if not blog_info.is_anonymous:
         print("\n" + "="*50)
         print("Analyzing author reputation...")
-        person_reputation = await analyze_person(blog_info.author_name + " " + blog_info.publisher_name)
+        person_reputation = await analyze_person(blog_info.author_name + " " + blog_info.author_affiliation + " " + blog_info.publisher_name)
         print("Person Reputation:", person_reputation)
     
     # Analyze intent
@@ -258,7 +264,7 @@ async def analyze_blog(url):
     print(f"  Error free: {accuracy_info.error_free}")
     print(f"  Facts vs opinions: {accuracy_info.facts_vs_opinions}")
 
-    # Analyze currency (fixed the bug - was calling analyze_accuracy instead)
+    # Analyze currency 
     print("\n" + "="*50)
     print("Analyzing currency...")
     currency_info = await analyze_currency(blog_text)
