@@ -1,25 +1,33 @@
-import trafilatura
-import sys
-from pydantic import BaseModel
-from agents import Agent, Runner, ModelSettings
+"""Blog analysis module for evaluating content accuracy, currency, and intent."""
+
 import asyncio
+import sys
+from typing import Optional, Tuple
+
+import trafilatura
+from pydantic import BaseModel, Field
+
+from agents import Agent, Runner, ModelSettings
 
 class AccuracyInfo(BaseModel):
-    has_sources: bool
-    verifiable: bool
-    error_free: bool
-    facts_vs_opinions: str
+    """Information about the accuracy and credibility of blog content."""
+    
+    has_sources: bool = Field(description="Whether the blog provides sources, citations, or evidence")
+    verifiable: bool = Field(description="Whether the content can be verified through other sources")
+    error_free: bool = Field(description="Whether the writing is free of obvious errors")
+    facts_vs_opinions: str = Field(description="Analysis of how facts and opinions are distinguished")
 
 class CurrencyInfo(BaseModel):
-    requires_current_info: bool
-    is_maintained: bool
-    published_date: str
-    last_updated: str
-    has_recent_references: bool
+    """Information about the currency and timeliness of blog content."""
+    
+    requires_current_info: bool = Field(description="Whether the topic requires up-to-date information")
+    is_maintained: bool = Field(description="Whether the blog shows signs of being maintained")
+    published_date: str = Field(description="When the blog post was published")
+    last_updated: str = Field(description="When the blog post was last updated")
+    has_recent_references: bool = Field(description="Whether the blog has recent references")
 
 async def analyze_currency(text: str) -> CurrencyInfo:
-    """
-    Use a language model to identify currency of the text
+    """Use a language model to identify currency of the text.
     
     Args:
         text: Extracted text from the blog
@@ -28,7 +36,7 @@ async def analyze_currency(text: str) -> CurrencyInfo:
         CurrencyInfo: Contains currency analysis
     """
     prompt = f"""
-    Analyze the following blog content to identify:
+Analyze the following blog content to identify:
 
 * Is the topic one where up-to-date information matters (e.g., technology, health, current events)?
 * Does the blog show signs of being maintained?
@@ -54,17 +62,16 @@ Content preview:
     return result.final_output
 
 async def analyze_accuracy(text: str) -> AccuracyInfo:
-    """
-    Use a language model to identify factual accuracy of the text
+    """Use a language model to identify factual accuracy of the text.
     
     Args:
         text: Extracted text from the blog
     
     Returns:
-        AccuracyInfo
+        AccuracyInfo: Contains accuracy analysis
     """
     prompt = f"""
-    Analyze the following blog content to identify:
+Analyze the following blog content to identify:
 
 * Does the blog provide sources, data, citations, or evidence?
 * Can the content be verified through other trustworthy sources?
@@ -91,35 +98,35 @@ Content preview:
     return result.final_output
 
 class IntentInfo(BaseModel):
-    tone: str
-    style: str
-    bias: str
-    sentiment: str
-    hate: str
+    """Information about the intent and tone of blog content."""
+    
+    tone: str = Field(description="Tone of the text (objective or opinion-driven)")
+    style: str = Field(description="Writing style of the text")
+    bias: str = Field(description="Bias towards social and political groups")
+    sentiment: str = Field(description="Overall sentiment of the text")
+    hate: str = Field(description="Analysis of hate speech or politically incorrect speech")
 
 async def analyze_intent(text: str) -> IntentInfo:
-    """
-    Use a language model to identify intent of the author.
+    """Use a language model to identify intent of the author.
     
     Args:
         text: Extracted text from the blog
     
     Returns:
-        IntentInfo
+        IntentInfo: Contains intent analysis
     """
     prompt = f"""
+Analyze the following blog content to identify:
+- Tone and style of the text. Is it objective or opinion-driven?
+- Intent of the author. Is the blog trying to inform, persuade, entertain, or sell something? Are there disclosure statements?
+- Bias towards social and political groups. Are ads, affiliate links, or sponsored content influencing the information?
+- Hate speech: identify possible vulgar, hate speech or politically incorrect speech
 
-Analyze the following blog content  to identify:
-    - Tone and style of the text. Is it objective or opinion-driven?
-    - Intent of the author. Is the blog trying to inform, persuade, entertain, or sell something?. Are there disclosure statements?
-    - Bias towards social and political groups. Are ads, affiliate links, or sponsored content influencing the information?
-    - Hate speech: identify possible vulgar, hate  speech or  politically incorrect speech
-    If any information is not available, use "Unknown".
+If any information is not available, use "Unknown".
 
-    Content preview:
-    {text[:1000] if text else "No content available"}
-    
-    """
+Content preview:
+{text[:1000] if text else "No content available"}
+"""
     
     extraction_agent = Agent(
         name="intent_extractor",
@@ -131,40 +138,41 @@ Analyze the following blog content  to identify:
     return result.final_output
 
 class BlogMetadata(BaseModel):
-    author_name: str
-    is_anonymous: bool
-    author_affiliation: str
-    blog_name: str
-    publisher_name: str
-    publishing_date: str
-    summary: str
+    """Metadata information about the blog post."""
+    
+    author_name: str = Field(description="Name of the author")
+    is_anonymous: bool = Field(description="Whether the author is anonymous or using a pseudonym")
+    author_affiliation: str = Field(description="Affiliation of the author")
+    blog_name: str = Field(description="Name of the blog")
+    publisher_name: str = Field(description="Name of the publisher")
+    publishing_date: str = Field(description="Date of publication")
+    summary: str = Field(description="Short summary of the blog content")
 
 
 async def extract_blog_info_with_llm(text: str) -> BlogMetadata:
-    """
-    Use a language model to extract author name, blog name, and publisher name.
+    """Use a language model to extract blog metadata.
     
     Args:
         text: Extracted text from the blog
     
     Returns:
-        BlogMetadata: Contains author_name, blog_name, and publisher_name
+        BlogMetadata: Contains blog metadata fields
     """
     prompt = f"""
-    Analyze the following blog content to identify:
-    1. The name of the author (person who wrote the article)
-    2. If person name is real or pseudonym
-    3. Affiliation of the author (employee and professional position of the author)
-    4. The name of the blog (title of the blog site or section)
-    5. The name of the publisher (organization/company publishing the blog)
-    6. Date of the publishing
-    7. Short summary of the blog.
-    
-    If any information is not available, use "Unknown".
+Analyze the following blog content to identify:
+1. The name of the author (person who wrote the article)
+2. If person name is real or pseudonym
+3. Affiliation of the author (employee and professional position of the author)
+4. The name of the blog (title of the blog site or section)
+5. The name of the publisher (organization/company publishing the blog)
+6. Date of the publishing
+7. Short summary of the blog.
 
-    Content preview:
-    {text[:1000] if text else "No content available"}
-    """
+If any information is not available, use "Unknown".
+
+Content preview:
+{text[:1000] if text else "No content available"}
+"""
     
     extraction_agent = Agent(
         name="blog_info_extractor",
@@ -176,15 +184,14 @@ async def extract_blog_info_with_llm(text: str) -> BlogMetadata:
     result = await Runner.run(extraction_agent, prompt)
     return result.final_output
 
-def download_blog(url: str):
-    """
-    Download a blog page and extract text and hyperlinks using trafilatura.
+def download_blog(url: str) -> Tuple[Optional[str], dict]:
+    """Download a blog page and extract text and hyperlinks using trafilatura.
     
     Args:
         url: The URL of the blog to download
     
     Returns:
-        tuple: Contains extracted text and metadata dict
+        Tuple of extracted text (or None) and metadata dict
     """
     downloaded = trafilatura.fetch_url(url)
     
@@ -199,13 +206,18 @@ def download_blog(url: str):
         include_comments=True,
         include_tables=True,
         include_links=True,
-        output_format='xml'
+        output_format="xml"
     )
     return text, metadata_dict
     
 
 
-async def analyze_blog(url):
+async def analyze_blog(url: str) -> None:
+    """Analyze a blog post for accuracy, currency, intent, and reputation.
+    
+    Args:
+        url: URL of the blog post to analyze
+    """
     blog_text, metadata = download_blog(url)
     
     if blog_text is None:
@@ -214,10 +226,11 @@ async def analyze_blog(url):
     
     print("Metadata:", metadata)
     
-    # Extract blog information using LLM
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("Extracting blog information using LLM...")
-    blog_info = await extract_blog_info_with_llm("URL: " + str(metadata) + "\n\n" + (blog_text or ""))
+    blog_info = await extract_blog_info_with_llm(
+        f"URL: {metadata}\n\n{blog_text or ''}"
+    )
     print("\nAuthor Name:", blog_info.author_name)
     print("\nAuthor Affiliation:", blog_info.author_affiliation)
     print("Blog Name:", blog_info.blog_name)
@@ -226,25 +239,24 @@ async def analyze_blog(url):
     print("Publisher Name:", blog_info.publisher_name)
     print("Summary:", blog_info.summary)
 
-    from person_reputation_agent import analyze_person 
-    from publisher_reputation_agent import analyze_publisher 
+    from person_reputation_agent import analyze_person
+    from publisher_reputation_agent import analyze_publisher
     
-    # Analyze publisher reputation
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("Analyzing publisher reputation...")
     publisher_reputation = await analyze_publisher(blog_info.publisher_name)
     print("Publisher Reputation:", publisher_reputation)
     
-    # Analyze person reputation if not anonymous
     person_reputation = "Unknown"
     if not blog_info.is_anonymous:
-        print("\n" + "="*50)
+        print("\n" + "=" * 50)
         print("Analyzing author reputation...")
-        person_reputation = await analyze_person(blog_info.author_name + " " + blog_info.author_affiliation + " " + blog_info.publisher_name)
+        person_reputation = await analyze_person(
+            f"{blog_info.author_name} {blog_info.author_affiliation} {blog_info.publisher_name}"
+        )
         print("Person Reputation:", person_reputation)
     
-    # Analyze intent
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("Analyzing intent...")
     intent_info = await analyze_intent(blog_text)
     print("Intent Info:")
@@ -254,8 +266,7 @@ async def analyze_blog(url):
     print(f"  Sentiment: {intent_info.sentiment}")
     print(f"  Hate: {intent_info.hate}")
 
-    # Analyze accuracy
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("Analyzing accuracy...")
     accuracy_info = await analyze_accuracy(blog_text)
     print("Accuracy Info:")
@@ -264,8 +275,7 @@ async def analyze_blog(url):
     print(f"  Error free: {accuracy_info.error_free}")
     print(f"  Facts vs opinions: {accuracy_info.facts_vs_opinions}")
 
-    # Analyze currency 
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("Analyzing currency...")
     currency_info = await analyze_currency(blog_text)
     print("Currency Info:")
@@ -275,11 +285,11 @@ async def analyze_blog(url):
     print(f"  Last updated: {currency_info.last_updated}")
     print(f"  Has recent references: {currency_info.has_recent_references}")
 
-async def main():
-    # Example usage
-    url = sys.argv[1] if len(sys.argv) > 1 else 'https://example.com/blog'
+async def main() -> None:
+    """Main entry point for the blog analysis script."""
+    url = sys.argv[1] if len(sys.argv) > 1 else "https://example.com/blog"
     await analyze_blog(url)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
-
