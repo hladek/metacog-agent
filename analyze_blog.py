@@ -36,20 +36,25 @@ async def analyze_currency(text: str) -> CurrencyInfo:
         CurrencyInfo: Contains currency analysis
     """
     prompt = f"""
-Analyze the following blog content to identify:
+Analyze the currency and timeliness of this blog content.
 
-* Is the topic one where up-to-date information matters (e.g., technology, health, current events)?
-* Does the blog show signs of being maintained?
+Your task:
+1. Determine if this topic requires up-to-date information (e.g., technology, health, current events, regulations)
+2. Assess if the blog appears to be actively maintained
+3. Identify all dates mentioned: publication date, last update, and reference dates
+4. Evaluate if references and sources are recent
 
-What to look for:
+Look for:
+- Explicit publication/update timestamps
+- Date stamps in the content
+- Dates in citations or references
+- Signs of ongoing maintenance (e.g., "Updated on...")
+- Recency of external sources mentioned
 
-* When was the blog post published or last updated?
-* Visible publication/update dates
-* Other dates
-* Recent references
+Provide clear boolean values and specific date strings when available (use "Not found" if absent).
 
-Content preview:
-{text[:1000] if text else "No content available"}
+Content to analyze:
+{text[:2000] if text else "No content available"}
 """
 
     extraction_agent = Agent(
@@ -71,21 +76,27 @@ async def analyze_accuracy(text: str) -> AccuracyInfo:
         AccuracyInfo: Contains accuracy analysis
     """
     prompt = f"""
-Analyze the following blog content to identify:
+Evaluate the accuracy and credibility of this blog content.
 
-* Does the blog provide sources, data, citations, or evidence?
-* Can the content be verified through other trustworthy sources?
-* Is the writing free of obvious errors or contradictions?
-* Does the author distinguish between facts and opinions?
+Your task:
+1. Identify if sources, citations, data, or evidence are provided
+2. Determine if claims can be verified through external trustworthy sources
+3. Detect obvious errors, contradictions, or inconsistencies in the writing
+4. Assess how the author distinguishes facts from opinions
 
-What to look for:
+Look for:
+- Academic or journalistic citations (footnotes, references, links)
+- Links to credible external sources (research papers, official sites, reputable publications)
+- Data with clear provenance
+- Use of hedging language ("studies suggest", "research shows")
+- Clear labeling of opinions vs facts
+- Logical consistency throughout the text
+- Factual errors or misleading statements
 
-* Citations or references
-* External links to credible sources
-* Balanced, evidence-supported statements
+Provide clear boolean assessments and descriptive analysis for facts vs opinions.
 
-Content preview:
-{text[:1000] if text else "No content available"}
+Content to analyze:
+{text[:2000] if text else "No content available"}
 """
     
     extraction_agent = Agent(
@@ -116,16 +127,25 @@ async def analyze_intent(text: str) -> IntentInfo:
         IntentInfo: Contains intent analysis
     """
     prompt = f"""
-Analyze the following blog content to identify:
-- Tone and style of the text. Is it objective or opinion-driven?
-- Intent of the author. Is the blog trying to inform, persuade, entertain, or sell something? Are there disclosure statements?
-- Bias towards social and political groups. Are ads, affiliate links, or sponsored content influencing the information?
-- Hate speech: identify possible vulgar, hate speech or politically incorrect speech
+Analyze the intent, tone, and potential bias of this blog content.
 
-If any information is not available, use "Unknown".
+Your task:
+1. Tone: Determine if the writing is objective, opinion-driven, emotional, or promotional
+2. Style: Identify the writing style (journalistic, academic, conversational, marketing, etc.)
+3. Bias: Assess bias toward or against social, political, or ideological groups
+4. Sentiment: Classify overall sentiment (positive, negative, neutral, mixed)
+5. Hate speech: Identify any vulgar, hateful, discriminatory, or offensive language
 
-Content preview:
-{text[:1000] if text else "No content available"}
+Author intent to evaluate:
+- Is the primary purpose to inform, persuade, entertain, or sell?
+- Are there disclosure statements for sponsorships, affiliates, or conflicts of interest?
+- Are ads, affiliate links, or sponsored content present?
+- Is the language inflammatory or deliberately polarizing?
+
+Provide descriptive assessments. Use "None detected" or "Not present" rather than "Unknown" when elements are absent.
+
+Content to analyze:
+{text[:2000] if text else "No content available"}
 """
     
     extraction_agent = Agent(
@@ -159,19 +179,25 @@ async def extract_blog_info_with_llm(text: str) -> BlogMetadata:
         BlogMetadata: Contains blog metadata fields
     """
     prompt = f"""
-Analyze the following blog content to identify:
-1. The name of the author (person who wrote the article)
-2. If person name is real or pseudonym
-3. Affiliation of the author (employee and professional position of the author)
-4. The name of the blog (title of the blog site or section)
-5. The name of the publisher (organization/company publishing the blog)
-6. Date of the publishing
-7. Short summary of the blog.
+Extract structured metadata from this blog post.
 
-If any information is not available, use "Unknown".
+Required information:
+1. Author name: Full name of the person who wrote the blog
+2. Author status: Determine if the name appears to be real (with credentials) or a pseudonym/anonymous
+3. Author affiliation: Employment, professional title, organizational association, or credentials
+4. Blog name: Title of the blog site or section (not the post title)
+5. Publisher name: Organization, company, or platform publishing the blog
+6. Publication date: When the post was originally published
+7. Summary: A concise 2-3 sentence summary of the blog's main points
 
-Content preview:
-{text[:1000] if text else "No content available"}
+Guidelines:
+- For unknown/missing fields, use "Unknown"
+- For author status, consider: presence of bio, credentials, linked profiles, consistency with real identity
+- Distinguish between the author (writer), blog name (site), and publisher (organization)
+- Extract dates in a consistent format (YYYY-MM-DD if possible)
+
+Content to analyze:
+{text[:2000] if text else "No content available"}
 """
     
     extraction_agent = Agent(
