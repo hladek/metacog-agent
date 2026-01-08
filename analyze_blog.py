@@ -163,8 +163,10 @@ class BlogMetadata(BaseModel):
     author_name: str = Field(description="Name of the author")
     is_anonymous: bool = Field(description="Whether the author is anonymous or using a pseudonym")
     author_affiliation: str = Field(description="Affiliation of the author")
+    author_language: str = Field(description="Primary language the author writes in")
     blog_name: str = Field(description="Name of the blog")
     publisher_name: str = Field(description="Name of the publisher")
+    publisher_country: str = Field(description="Country where the publisher is based")
     publishing_date: str = Field(description="Date of publication")
     summary: str = Field(description="Short summary of the blog content")
 
@@ -185,16 +187,20 @@ Required information:
 1. Author name: Full name of the person who wrote the blog
 2. Author status: Determine if the name appears to be real (with credentials) or a pseudonym/anonymous
 3. Author affiliation: Employment, professional title, organizational association, or credentials
-4. Blog name: Title of the blog site or section (not the post title)
-5. Publisher name: Organization, company, or platform publishing the blog
-6. Publication date: When the post was originally published
-7. Summary: A concise 2-3 sentence summary of the blog's main points
+4. Author language: Primary language the author writes in (e.g., "English", "Spanish", "French")
+5. Blog name: Title of the blog site or section (not the post title)
+6. Publisher name: Organization, company, or platform publishing the blog
+7. Publisher country: Country where the publisher is based
+8. Publication date: When the post was originally published
+9. Summary: A concise 2-3 sentence summary of the blog's main points
 
 Guidelines:
 - For unknown/missing fields, use "Unknown"
 - For author status, consider: presence of bio, credentials, linked profiles, consistency with real identity
 - Distinguish between the author (writer), blog name (site), and publisher (organization)
 - Extract dates in a consistent format (YYYY-MM-DD if possible)
+- For author language, identify the primary language they write in based on the content
+- For publisher country, look for location information, domain extensions, or contextual clues
 
 Content to analyze:
 {text[:2000] if text else "No content available"}
@@ -258,11 +264,13 @@ async def analyze_blog(url: str) -> None:
         f"URL: {metadata}\n\n{blog_text or ''}"
     )
     print("\nAuthor Name:", blog_info.author_name)
-    print("\nAuthor Affiliation:", blog_info.author_affiliation)
+    print("Author Affiliation:", blog_info.author_affiliation)
+    print("Author Language:", blog_info.author_language)
     print("Blog Name:", blog_info.blog_name)
     print("Is anonymous:", blog_info.is_anonymous)
     print("Publishing date:", blog_info.publishing_date)
     print("Publisher Name:", blog_info.publisher_name)
+    print("Publisher Country:", blog_info.publisher_country)
     print("Summary:", blog_info.summary)
 
     from person_reputation_agent import analyze_person
@@ -270,7 +278,7 @@ async def analyze_blog(url: str) -> None:
     
     print("\n" + "=" * 50)
     print("Analyzing publisher reputation...")
-    publisher_reputation = await analyze_publisher(blog_info.publisher_name)
+    publisher_reputation = await analyze_publisher(blog_info.publisher_name + " from " + blog_info.publisher_country + " in " + blog_info.author_language + " language" )
     print("Publisher Reputation:", publisher_reputation)
     
     person_reputation = "Unknown"

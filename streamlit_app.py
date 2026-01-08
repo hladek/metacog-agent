@@ -38,10 +38,27 @@ if st.button("Analyze", type="primary"):
                 # Display summary, image, and content preview prominently at top
                 st.markdown("---")
                 
-                # Summary
-                if blog_info.summary and blog_info.summary.lower() != "unknown":
-                    st.subheader("📝 Summary")
-                    st.info(blog_info.summary)
+                # Summary and Metadata side by side
+                col_sum, col_meta = st.columns([2, 1])
+                
+                with col_sum:
+                    if blog_info.summary and blog_info.summary.lower() != "unknown":
+                        st.subheader("📝 Summary")
+                        st.info(blog_info.summary)
+                
+                with col_meta:
+                    st.subheader("📋 Metadata")
+                    if metadata:
+                        if metadata.get('title'):
+                            st.write(f"**Title:** {metadata['title']}")
+                        if metadata.get('author'):
+                            st.write(f"**Author:** {metadata['author']}")
+                        if metadata.get('date'):
+                            st.write(f"**Published:** {metadata['date']}")
+                        if metadata.get('sitename'):
+                            st.write(f"**Site:** {metadata['sitename']}")
+                        if metadata.get('url'):
+                            st.write(f"**URL:** {metadata['url']}")
                 
                 # Image and Content Preview side by side
                 col1, col2 = st.columns([1, 2])
@@ -60,59 +77,15 @@ if st.button("Analyze", type="primary"):
                 st.markdown("---")
                 
                 # Create tabs for detailed analysis
-                tab1, tab2, tab3, tab4, tab5 = st.tabs([
-                    "📋 Metadata", 
+                tab1, tab2, tab3, tab4 = st.tabs([
                     "👤 Author & Publisher", 
                     "🎯 Intent", 
                     "✅ Accuracy", 
                     "📅 Currency"
                 ])
                 
-                # Tab 1: Metadata
+                # Tab 1: Author & Publisher
                 with tab1:
-                    st.subheader("Blog Metadata")
-                    
-                    if metadata:
-                        col1, col2 = st.columns(2)
-                        
-                        with col1:
-                            st.write("**📰 Article Information**")
-                            if metadata.get('title'):
-                                st.write(f"**Title:** {metadata['title']}")
-                            if metadata.get('author'):
-                                st.write(f"**Author:** {metadata['author']}")
-                            if metadata.get('date'):
-                                st.write(f"**Published:** {metadata['date']}")
-                            if metadata.get('description'):
-                                st.write(f"**Description:** {metadata['description']}")
-                            if metadata.get('pagetype'):
-                                st.write(f"**Page Type:** {metadata['pagetype']}")
-                        
-                        with col2:
-                            st.write("**🌐 Source Information**")
-                            if metadata.get('url'):
-                                st.write(f"**URL:** {metadata['url']}")
-                            if metadata.get('hostname'):
-                                st.write(f"**Hostname:** {metadata['hostname']}")
-                            if metadata.get('sitename'):
-                                st.write(f"**Site Name:** {metadata['sitename']}")
-                            if metadata.get('filedate'):
-                                st.write(f"**Retrieved:** {metadata['filedate']}")
-                        
-                        if metadata.get('categories') or metadata.get('tags'):
-                            st.write("**🏷️ Categories & Tags**")
-                            if metadata.get('categories'):
-                                st.write(f"**Categories:** {', '.join(metadata['categories']) if metadata['categories'] else 'None'}")
-                            if metadata.get('tags'):
-                                st.write(f"**Tags:** {', '.join(metadata['tags']) if metadata['tags'] else 'None'}")
-                        
-                        with st.expander("View Raw Metadata"):
-                            st.json(metadata)
-                    else:
-                        st.info("No metadata available")
-                
-                # Tab 2: Author & Publisher
-                with tab2:
                     col1, col2 = st.columns(2)
                     
                     with col1:
@@ -142,8 +115,8 @@ if st.button("Analyze", type="primary"):
                             st.write("**Reputation:**")
                             st.info(publisher_reputation)
                 
-                # Tab 3: Intent
-                with tab3:
+                # Tab 2: Intent
+                with tab2:
                     st.subheader("🎯 Intent Analysis")
                     st.markdown("Understanding the author's purpose, tone, and potential biases helps evaluate credibility.")
                     
@@ -193,8 +166,8 @@ if st.button("Analyze", type="primary"):
                             **Content Safety**: Hateful, discriminatory, or offensive language indicates poor editorial standards and unreliable content.
                             """)
                 
-                # Tab 4: Accuracy
-                with tab4:
+                # Tab 3: Accuracy
+                with tab3:
                     st.subheader("✅ Accuracy Analysis")
                     st.markdown("Evaluating the reliability, verifiability, and quality of the content.")
                     
@@ -268,8 +241,8 @@ if st.button("Analyze", type="primary"):
                             **Credibility Score**: This combines all accuracy indicators. High credibility doesn't guarantee truth, but suggests the content follows journalistic or academic standards.
                             """)
                 
-                # Tab 5: Currency
-                with tab5:
+                # Tab 4: Currency
+                with tab4:
                     st.subheader("📅 Currency Analysis")
                     st.markdown("Assessing whether the content is up-to-date and relevant for its topic.")
                     
