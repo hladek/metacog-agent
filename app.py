@@ -32,7 +32,7 @@ if st.session_state.analysis_result is None:
 else:
     page = st.sidebar.radio(
         "Navigation",
-        ["Home", "Metadata", "Currency", "Relevance", "Authority", "Accuracy", "Purpose"]
+        ["Home", "Currency", "Relevance", "Authority", "Accuracy", "Purpose"]
     )
 
 st.sidebar.markdown("---")
@@ -117,151 +117,158 @@ if page == "Home":
         st.markdown("---")
         st.info(f"**Currently analyzing:** {st.session_state.blog_url}")
 
-# Metadata page
-elif page == "Metadata":
-    st.title("📄 Blog Metadata")
+# Currency page (includes metadata and timeliness)
+elif page == "Currency":
+    st.title("📅 Currency - Timeliness & Metadata")
     result = st.session_state.analysis_result
     
+    st.markdown("""
+    Currency examines the timeliness of information and key metadata about the source.
+    Understanding when and by whom content was published is crucial for evaluating credibility.
+    """)
+    
     # Quick tutorial
-    with st.expander("💡 How to Evaluate Blog Metadata"):
+    with st.expander("💡 How to Evaluate Currency"):
         st.markdown("""
         
-        1. Identify author and affiliation author
-           - Is it anonymous author?     
+        1. **Author Identity**
+           - Is the author identified or anonymous?
            - What institution or organization is the author associated with?
         2. **Publisher/Platform** 
            - Where is this content published?
+           - Is the publisher reputable?
         3. **Publication Date** 
            - When was the content published?
-           - How current is the information?
-        4. **Message**
-           - Identify the genre, topic and main points of the text.
+           - How current is the information for this topic?
+           - Is the blog regularly maintained?
+        4. **Content Overview**
+           - Understand the scope and main points of the text
         """)
     
     # URL Section
     st.code(result.url, language=None)
     st.markdown("---")
     
-    # Key metrics in columns
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        author_name = result.metadata.author_name or "Unknown"
-        author_icon = "🕶️" if result.metadata.is_anonymous else "✓"
-        st.metric("Author", f"{author_name} {author_icon}")
-    
-    with col2:
-        st.metric("Publisher", result.metadata.publisher_name or "Not specified")
-    
-    with col3:
-        pub_date = result.metadata.publishing_date or "Not specified"
-        # Calculate time ago
-        time_ago = ""
-        if pub_date != "Not specified":
-            try:
-                from datetime import datetime
-                import re
-                date_match = re.search(r'\d{4}-\d{2}-\d{2}', pub_date)
-                if date_match:
-                    parsed_date = datetime.strptime(date_match.group(), '%Y-%m-%d')
-                    days_ago = (datetime.now() - parsed_date).days
-                    if days_ago == 0:
-                        time_ago = "today"
-                    elif days_ago == 1:
-                        time_ago = "yesterday"
-                    elif days_ago < 7:
-                        time_ago = f"{days_ago}d ago"
-                    elif days_ago < 30:
-                        time_ago = f"{days_ago // 7}w ago"
-                    elif days_ago < 365:
-                        time_ago = f"{days_ago // 30}mo ago"
-                    else:
-                        time_ago = f"{days_ago // 365}y ago"
-            except:
-                pass
-        st.metric("Published", pub_date[:10] if len(pub_date) > 10 else pub_date, delta=time_ago)
-    
-    with col4:
-        if st.session_state.blog_content:
-            word_count = len(st.session_state.blog_content.split())
-            read_time = max(1, word_count // 200)
-            st.metric("Read Time", f"{read_time} min", delta=f"{word_count:,} words")
-        else:
-            st.metric("Read Time", "N/A")
-    
-    st.markdown("---")
-    
-    # Author transparency assessment
-    author_indicators = []
-    if not result.metadata.is_anonymous:
-        author_indicators.append("✅ Author identified")
+    # Author Information
+    st.subheader("👤 Author")
+    author_name = result.metadata.author_name or "Unknown"
+    if result.metadata.is_anonymous:
+        st.warning(f"🕶️ Anonymous or unidentified author")
     else:
-        author_indicators.append("⚠️ Anonymous author")
+        st.success(f"✓ **{author_name}**")
     
     affiliation = result.metadata.author_affiliation
     if affiliation and affiliation not in ["Unknown", "None"]:
-        author_indicators.append(f"✅ Affiliation: {affiliation}")
+        st.markdown(f"**Affiliation:** {affiliation}")
+    
+    st.markdown("---")
+    
+    # Publisher Information
+    st.subheader("🏢 Publisher")
+    publisher = result.metadata.publisher_name or "Not specified"
+    st.markdown(f"**{publisher}**")
+    
+    if result.metadata.blog_name and result.metadata.blog_name != publisher:
+        st.markdown(f"**Blog:** {result.metadata.blog_name}")
+    
+    st.markdown("---")
+    
+    # Publication Date & Timeliness
+    st.subheader("📅 Publication Date & Timeliness")
+    pub_date = result.metadata.publishing_date or "Not specified"
+    
+    if pub_date != "Not specified":
+        try:
+            from datetime import datetime
+            import re
+            date_match = re.search(r'\d{4}-\d{2}-\d{2}', pub_date)
+            if date_match:
+                parsed_date = datetime.strptime(date_match.group(), '%Y-%m-%d')
+                days_ago = (datetime.now() - parsed_date).days
+                
+                if days_ago == 0:
+                    time_ago = "Published today"
+                elif days_ago == 1:
+                    time_ago = "Published yesterday"
+                elif days_ago < 7:
+                    time_ago = f"Published {days_ago} days ago"
+                elif days_ago < 30:
+                    weeks = days_ago // 7
+                    time_ago = f"Published {weeks} week{'s' if weeks > 1 else ''} ago"
+                elif days_ago < 365:
+                    months = days_ago // 30
+                    time_ago = f"Published {months} month{'s' if months > 1 else ''} ago"
+                else:
+                    years = days_ago // 365
+                    time_ago = f"Published {years} year{'s' if years > 1 else ''} ago"
+                
+                st.markdown(f"**{pub_date[:10]}** — {time_ago}")
+            else:
+                st.markdown(f"**{pub_date}**")
+        except:
+            st.markdown(f"**{pub_date}**")
     else:
-        author_indicators.append("ℹ️ No affiliation listed")
+        st.markdown("**Not specified**")
     
-    if result.metadata.blog_name:
-        author_indicators.append(f"📰 Blog: {result.metadata.blog_name}")
+    # Currency analysis
+    st.markdown(f"**Last Updated:** {result.currency.last_updated}")
+    st.markdown(f"**Requires Current Info:** {'Yes' if result.currency.requires_current_info else 'No'}")
+    st.markdown(f"**Is Maintained:** {'Yes' if result.currency.is_maintained else 'No'}")
+    st.markdown(f"**Has Recent References:** {'Yes' if result.currency.has_recent_references else 'No'}")
     
-    # Display as compact list
-    st.markdown("**Authorship:** " + " • ".join(author_indicators))
-    
-    st.markdown("---")
-    
-    # Content summary
-    st.subheader("Summary")
-    if result.metadata.summary:
-        st.write(result.metadata.summary)
-    else:
-        st.info("_No summary available_")
-    
-    # Raw metadata in expandable section
-    if result.raw_metadata:
-        st.markdown("---")
-        with st.expander("🔍 Technical Details"):
-            st.json(result.raw_metadata)
-
-# Currency page
-elif page == "Currency":
-    st.title("📅 Currency - Timeliness Analysis")
-    result = st.session_state.analysis_result
-    
-    st.markdown("""
-    Currency examines how timely and up-to-date the information is. This is particularly 
-    important for topics that change rapidly.
-    """)
-    
-    st.markdown("---")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.metric("Requires Current Info", 
-                 "Yes" if result.currency.requires_current_info else "No")
-        st.metric("Is Maintained", 
-                 "Yes" if result.currency.is_maintained else "No")
-    
-    with col2:
-        st.metric("Published Date", result.currency.published_date)
-        st.metric("Last Updated", result.currency.last_updated)
-    
-    with col3:
-        st.metric("Recent References", 
-                 "Yes" if result.currency.has_recent_references else "No")
-    
-    st.markdown("---")
-    st.subheader("Analysis")
-    
+    # Currency assessment
     if result.currency.requires_current_info and not result.currency.is_maintained:
         st.warning("⚠️ This topic requires current information, but the blog doesn't appear to be regularly maintained.")
     elif result.currency.is_maintained and result.currency.has_recent_references:
         st.success("✅ The blog appears to be well-maintained with recent references.")
     else:
         st.info("ℹ️ Consider the publication date when evaluating this content.")
+    
+    st.markdown("---")
+    
+    # Content Information
+    st.subheader("📝 Content")
+    if st.session_state.blog_content:
+        word_count = len(st.session_state.blog_content.split())
+        read_time = max(1, word_count // 200)
+        st.markdown(f"**Word count:** {word_count:,} words")
+        st.markdown(f"**Reading time:** ~{read_time} minute{'s' if read_time > 1 else ''}")
+    
+    st.markdown("---")
+    
+    # Content summary
+    st.subheader("📋 Summary")
+    if result.metadata.summary:
+        st.write(result.metadata.summary)
+    else:
+        st.info("_No summary available_")
+    
+    # Important technical details
+    if result.raw_metadata:
+        st.markdown("---")
+        with st.expander("🔍 Additional Technical Details"):
+            # Extract only important technical details
+            important_fields = {
+                'title': 'Title',
+                'description': 'Description',
+                'keywords': 'Keywords',
+                'language': 'Language',
+                'content_type': 'Content Type',
+                'charset': 'Character Encoding',
+                'canonical_url': 'Canonical URL'
+            }
+            
+            details_found = False
+            for key, label in important_fields.items():
+                if key in result.raw_metadata and result.raw_metadata[key]:
+                    value = result.raw_metadata[key]
+                    if isinstance(value, list):
+                        value = ', '.join(str(v) for v in value)
+                    st.markdown(f"**{label}:** {value}")
+                    details_found = True
+            
+            if not details_found:
+                st.info("No additional technical details available")
 
 # Relevance page
 elif page == "Relevance":
@@ -271,6 +278,32 @@ elif page == "Relevance":
     st.markdown("""
     Relevance assesses how useful and appropriate the content is for your needs.
     """)
+    
+    # Quick tutorial
+    with st.expander("💡 How to Evaluate Relevance"):
+        st.markdown("""
+        
+        1. **Does it relate to your topic?**
+           - Is the content directly relevant to your research question or information need?
+           - Does it cover the specific aspects you're investigating?
+        
+        2. **Who is the intended audience?**
+           - Is it written for experts, students, or general public?
+           - Does the level of complexity match your needs?
+        
+        3. **Is it at the right level?**
+           - Too basic: Oversimplified or lacks depth?
+           - Too advanced: Technical jargon you don't understand?
+           - Just right: Matches your knowledge level and purpose
+        
+        4. **Have you looked at other sources?**
+           - Did you compare multiple sources before choosing this one?
+           - Is this the best available source for your needs?
+        
+        5. **Would you cite this in your work?**
+           - Is the information substantial enough to support your argument?
+           - Does it add value to your research or project?
+        """)
     
     st.markdown("---")
     
@@ -301,6 +334,36 @@ elif page == "Authority":
     st.markdown("""
     Authority evaluates the credibility and expertise of the author and publisher.
     """)
+    
+    # Quick tutorial
+    with st.expander("💡 How to Evaluate Authority"):
+        st.markdown("""
+        
+        1. **Who is the author?**
+           - Is the author clearly identified?
+           - What are their credentials, qualifications, or expertise?
+           - Can you find information about them elsewhere?
+        
+        2. **What are their credentials?**
+           - Do they have relevant education or professional experience?
+           - Are they affiliated with a reputable institution or organization?
+           - Have they published other work on this topic?
+        
+        3. **Who is the publisher or sponsor?**
+           - What organization published or hosts this content?
+           - Is the publisher reputable in this field?
+           - What is their mission and purpose?
+        
+        4. **What is the domain/URL?**
+           - .edu (educational), .gov (government), .org (organization), .com (commercial)
+           - Does the domain match what you'd expect for this content?
+           - Is it a well-known, established site?
+        
+        5. **Can you verify their expertise?**
+           - Search for the author's name online
+           - Check for reviews, citations, or professional profiles
+           - Look for bias, conflicts of interest, or controversial reputation
+        """)
     
     st.markdown("---")
     
@@ -371,6 +434,36 @@ elif page == "Accuracy":
     Accuracy assesses the reliability, correctness, and verifiability of the content.
     """)
     
+    # Quick tutorial
+    with st.expander("💡 How to Evaluate Accuracy"):
+        st.markdown("""
+        
+        1. **Where does the information come from?**
+           - Are sources clearly cited and documented?
+           - Can you verify the information in other sources?
+           - Are there links to original research or data?
+        
+        2. **Is the information supported by evidence?**
+           - Are claims backed up with facts, data, or research?
+           - Can you distinguish between facts and opinions?
+           - Are statistics and data presented with context?
+        
+        3. **Can you verify the information?**
+           - Can you find the same information in other reliable sources?
+           - Do the sources cited actually support the claims made?
+           - Can you trace information back to the original source?
+        
+        4. **Has it been reviewed or refereed?**
+           - Has the content been peer-reviewed or fact-checked?
+           - Is there editorial oversight or quality control?
+           - Are corrections or updates clearly noted?
+        
+        5. **Does the content appear reliable?**
+           - Is the writing clear and free of errors (spelling, grammar)?
+           - Does it seem objective and balanced?
+           - Are there obvious signs of bias, exaggeration, or misinformation?
+        """)
+    
     st.markdown("---")
     
     col1, col2, col3 = st.columns(3)
@@ -421,6 +514,36 @@ elif page == "Purpose":
     st.markdown("""
     Purpose examines why the content exists and identifies potential biases or agendas.
     """)
+    
+    # Quick tutorial
+    with st.expander("💡 How to Evaluate Purpose"):
+        st.markdown("""
+        
+        1. **What is the purpose of the information?**
+           - To inform, teach, or educate?
+           - To persuade, sell, or advocate?
+           - To entertain or express opinions?
+        
+        2. **Do the authors make their intentions clear?**
+           - Is the purpose explicitly stated?
+           - Is it an advertisement, opinion piece, or factual report?
+           - Are there hidden agendas or conflicts of interest?
+        
+        3. **Is the information fact, opinion, or propaganda?**
+           - Are claims presented as facts backed by evidence?
+           - Is the content primarily opinion or commentary?
+           - Does it use emotional language or manipulation?
+        
+        4. **Does the point of view appear objective and impartial?**
+           - Is more than one perspective presented?
+           - Does the author acknowledge limitations or counterarguments?
+           - Is the language neutral or emotionally charged?
+        
+        5. **Are there political, ideological, or commercial biases?**
+           - Who benefits from this information?
+           - Is there advertising or sponsored content?
+           - Does the author or publisher have a known bias?
+        """)
     
     st.markdown("---")
     
