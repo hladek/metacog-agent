@@ -122,27 +122,107 @@ elif page == "Metadata":
     st.title("📄 Blog Metadata")
     result = st.session_state.analysis_result
     
-    col1, col2 = st.columns(2)
+    # Quick tutorial
+    with st.expander("💡 How to Evaluate Blog Metadata"):
+        st.markdown("""
+        
+        1. Identify author and affiliation author
+           - Is it anonymous author?     
+           - What institution or organization is the author associated with?
+        2. **Publisher/Platform** 
+           - Where is this content published?
+        3. **Publication Date** 
+           - When was the content published?
+           - How current is the information?
+        4. **Message**
+           - Identify the genre, topic and main points of the text.
+        """)
+    
+    # URL Section
+    st.code(result.url, language=None)
+    st.markdown("---")
+    
+    # Key metrics in columns
+    col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.subheader("Basic Information")
-        st.write(f"**URL:** {result.url}")
-        st.write(f"**Author:** {result.metadata.author_name}")
-        st.write(f"**Blog Name:** {result.metadata.blog_name}")
-        st.write(f"**Publisher:** {result.metadata.publisher_name}")
-        st.write(f"**Published:** {result.metadata.publishing_date}")
+        author_name = result.metadata.author_name or "Unknown"
+        author_icon = "🕶️" if result.metadata.is_anonymous else "✓"
+        st.metric("Author", f"{author_name} {author_icon}")
     
     with col2:
-        st.subheader("Author Details")
-        st.write(f"**Anonymous:** {result.metadata.is_anonymous}")
-        st.write(f"**Affiliation:** {result.metadata.author_affiliation}")
+        st.metric("Publisher", result.metadata.publisher_name or "Not specified")
+    
+    with col3:
+        pub_date = result.metadata.publishing_date or "Not specified"
+        # Calculate time ago
+        time_ago = ""
+        if pub_date != "Not specified":
+            try:
+                from datetime import datetime
+                import re
+                date_match = re.search(r'\d{4}-\d{2}-\d{2}', pub_date)
+                if date_match:
+                    parsed_date = datetime.strptime(date_match.group(), '%Y-%m-%d')
+                    days_ago = (datetime.now() - parsed_date).days
+                    if days_ago == 0:
+                        time_ago = "today"
+                    elif days_ago == 1:
+                        time_ago = "yesterday"
+                    elif days_ago < 7:
+                        time_ago = f"{days_ago}d ago"
+                    elif days_ago < 30:
+                        time_ago = f"{days_ago // 7}w ago"
+                    elif days_ago < 365:
+                        time_ago = f"{days_ago // 30}mo ago"
+                    else:
+                        time_ago = f"{days_ago // 365}y ago"
+            except:
+                pass
+        st.metric("Published", pub_date[:10] if len(pub_date) > 10 else pub_date, delta=time_ago)
+    
+    with col4:
+        if st.session_state.blog_content:
+            word_count = len(st.session_state.blog_content.split())
+            read_time = max(1, word_count // 200)
+            st.metric("Read Time", f"{read_time} min", delta=f"{word_count:,} words")
+        else:
+            st.metric("Read Time", "N/A")
     
     st.markdown("---")
-    st.subheader("Summary")
-    st.write(result.metadata.summary)
     
+    # Author transparency assessment
+    author_indicators = []
+    if not result.metadata.is_anonymous:
+        author_indicators.append("✅ Author identified")
+    else:
+        author_indicators.append("⚠️ Anonymous author")
+    
+    affiliation = result.metadata.author_affiliation
+    if affiliation and affiliation not in ["Unknown", "None"]:
+        author_indicators.append(f"✅ Affiliation: {affiliation}")
+    else:
+        author_indicators.append("ℹ️ No affiliation listed")
+    
+    if result.metadata.blog_name:
+        author_indicators.append(f"📰 Blog: {result.metadata.blog_name}")
+    
+    # Display as compact list
+    st.markdown("**Authorship:** " + " • ".join(author_indicators))
+    
+    st.markdown("---")
+    
+    # Content summary
+    st.subheader("Summary")
+    if result.metadata.summary:
+        st.write(result.metadata.summary)
+    else:
+        st.info("_No summary available_")
+    
+    # Raw metadata in expandable section
     if result.raw_metadata:
-        with st.expander("Raw Metadata"):
+        st.markdown("---")
+        with st.expander("🔍 Technical Details"):
             st.json(result.raw_metadata)
 
 # Currency page
