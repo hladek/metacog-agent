@@ -53,12 +53,23 @@ if page == "Home":
     and reliability of blog posts using the CRAAP test framework.
     
     ### What is CRAAP?
-    The CRAAP test is a method to evaluate sources based on five criteria:
-    - **Currency**: How timely is the information?
-    - **Relevance**: How useful is this information for your needs?
-    - **Authority**: Who is behind the content?
-    - **Accuracy**: How correct and reliable is the content?
-    - **Purpose**: Why does this content exist?
+    The **CRAAP Test** is a widely-used evaluation framework developed by librarians at California State University, Chico 
+    to help assess the quality and reliability of information sources. It's particularly valuable in today's digital age 
+    where misinformation spreads rapidly. The acronym stands for five key criteria:
+    
+    - **Currency**: How timely is the information? When was it published or last updated?
+    - **Relevance**: How useful is this information for your needs? Does it match your research level?
+    - **Authority**: Who is behind the content? What are their credentials and qualifications?
+    - **Accuracy**: How correct and reliable is the content? Can it be verified with evidence?
+    - **Purpose**: Why does this content exist? What is the author's intent and potential bias?
+    
+    ### Learn More About Information Evaluation
+    
+    Explore these recommended methodologies for evaluating online sources:
+    
+    📚 **[CRAAP Test Guide](https://library.csuchico.edu/help/source-or-information-good)** - Comprehensive guide from CSU Chico  
+    🔍 **[SIFT Method](https://www.ala.org/advocacy/intfreedom/SIFT)** - Four moves for quick fact-checking (Stop, Investigate, Find, Trace)  
+    📡 **[RADAR Framework](https://www.open.edu/openlearn/ocw/mod/oucontent/view.php?id=106020)** - Evaluate sources using Relevance, Authority, Date, Appearance, and Reason
     
     ### Get Started
     Enter a blog URL below to download and analyze it. Once analyzed, use the navigation 
