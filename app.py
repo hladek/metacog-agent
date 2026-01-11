@@ -145,8 +145,12 @@ elif page == "Currency":
            - Understand the scope and main points of the text
         """)
     
+    st.markdown("---")
+    
     # URL Section
+    st.subheader("🔗 Source URL")
     st.code(result.url, language=None)
+    
     st.markdown("---")
     
     # Author Information
@@ -307,23 +311,28 @@ elif page == "Relevance":
     
     st.markdown("---")
     
-    st.subheader("Content Summary")
-    st.write(result.metadata.summary)
+    st.subheader("📋 Content Summary")
+    st.markdown(result.metadata.summary)
     
     st.markdown("---")
-    st.subheader("Target Audience & Scope")
+    
+    st.subheader("🎓 Target Audience & Scope")
     
     col1, col2 = st.columns(2)
     
     with col1:
-        st.write(f"**Tone:** {result.purpose.tone}")
-        st.write(f"**Style:** {result.purpose.style}")
+        st.markdown(f"**Tone:** {result.purpose.tone}")
+        st.markdown(f"**Style:** {result.purpose.style}")
     
     with col2:
-        st.write(f"**Publisher Type:** {result.metadata.publisher_name}")
-        st.write(f"**Author Affiliation:** {result.metadata.author_affiliation}")
+        st.markdown(f"**Publisher Type:** {result.metadata.publisher_name}")
+        st.markdown(f"**Author Affiliation:** {result.metadata.author_affiliation}")
     
     st.markdown("---")
+    
+    st.subheader("📊 Assessment")
+    st.info("💡 Consider whether this content matches your research needs and expertise level.")
+    st.subheader("📊 Assessment")
     st.info("💡 Consider whether this content matches your research needs and expertise level.")
 
 # Authority page
@@ -374,24 +383,25 @@ elif page == "Authority":
         col1, col2 = st.columns(2)
         
         with col1:
-            st.write("**Public Sentiment**")
-            st.write(result.author_authority.public_sentiment)
+            st.markdown("**Public Sentiment**")
+            st.markdown(result.author_authority.public_sentiment)
             
-            st.write("**Positive Mentions**")
-            st.write(result.author_authority.positive_mentions)
+            st.markdown("**Positive Mentions**")
+            st.markdown(result.author_authority.positive_mentions)
         
         with col2:
-            st.write("**Negative Mentions**")
-            st.write(result.author_authority.negative_mentions)
+            st.markdown("**Negative Mentions**")
+            st.markdown(result.author_authority.negative_mentions)
             
-            st.write("**Sources**")
-            st.write(result.author_authority.sources)
+            st.markdown("**Sources**")
+            st.markdown(result.author_authority.sources)
         
         st.markdown("---")
-        st.write("**Summary**")
+        
+        st.subheader("📊 Author Summary")
         st.info(result.author_authority.summary)
     else:
-        st.warning("Author authority analysis not available.")
+        st.warning("⚠️ Author authority analysis not available.")
     
     st.markdown("---")
     
@@ -402,28 +412,29 @@ elif page == "Authority":
         tabs = st.tabs(["Overview", "Bias & Reliability", "Public Perception"])
         
         with tabs[0]:
-            st.write("**Ownership and Funding**")
-            st.write(result.publisher_authority.ownership_and_funding)
+            st.markdown("**Ownership and Funding**")
+            st.markdown(result.publisher_authority.ownership_and_funding)
             
-            st.write("**Editorial Standards**")
-            st.write(result.publisher_authority.editorial_standards)
+            st.markdown("**Editorial Standards**")
+            st.markdown(result.publisher_authority.editorial_standards)
         
         with tabs[1]:
-            st.write("**Political Bias**")
-            st.write(result.publisher_authority.political_bias)
+            st.markdown("**Political Bias**")
+            st.markdown(result.publisher_authority.political_bias)
             
-            st.write("**Factual Reliability**")
-            st.write(result.publisher_authority.factual_reliability)
+            st.markdown("**Factual Reliability**")
+            st.markdown(result.publisher_authority.factual_reliability)
         
         with tabs[2]:
-            st.write("**Public Perception**")
-            st.write(result.publisher_authority.public_perception)
+            st.markdown("**Public Perception**")
+            st.markdown(result.publisher_authority.public_perception)
         
         st.markdown("---")
-        st.write("**Summary**")
+        
+        st.subheader("📊 Publisher Summary")
         st.info(result.publisher_authority.summary)
     else:
-        st.warning("Publisher authority analysis not available.")
+        st.warning("⚠️ Publisher authority analysis not available.")
 
 # Accuracy page
 elif page == "Accuracy":
@@ -466,6 +477,8 @@ elif page == "Accuracy":
     
     st.markdown("---")
     
+    st.subheader("📈 Key Metrics")
+    
     col1, col2, col3 = st.columns(3)
     
     with col1:
@@ -487,11 +500,13 @@ elif page == "Accuracy":
                  delta_color="normal" if error_free else "inverse")
     
     st.markdown("---")
-    st.subheader("Facts vs. Opinions")
-    st.write(result.accuracy.facts_vs_opinions)
+    
+    st.subheader("🔍 Facts vs. Opinions")
+    st.markdown(result.accuracy.facts_vs_opinions)
     
     st.markdown("---")
-    st.subheader("Overall Assessment")
+    
+    st.subheader("📊 Overall Assessment")
     
     score = sum([
         result.accuracy.has_sources,
@@ -550,18 +565,19 @@ elif page == "Purpose":
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader("Writing Style")
-        st.write(f"**Tone:** {result.purpose.tone}")
-        st.write(f"**Style:** {result.purpose.style}")
-        st.write(f"**Sentiment:** {result.purpose.sentiment}")
+        st.subheader("✍️ Writing Style")
+        st.markdown(f"**Tone:** {result.purpose.tone}")
+        st.markdown(f"**Style:** {result.purpose.style}")
+        st.markdown(f"**Sentiment:** {result.purpose.sentiment}")
     
     with col2:
-        st.subheader("Bias Analysis")
-        st.write(f"**Bias:** {result.purpose.bias}")
-        st.write(f"**Hate Speech Analysis:** {result.purpose.hate}")
+        st.subheader("⚖️ Bias Analysis")
+        st.markdown(f"**Bias:** {result.purpose.bias}")
+        st.markdown(f"**Hate Speech Analysis:** {result.purpose.hate}")
     
     st.markdown("---")
-    st.subheader("Interpretation")
+    
+    st.subheader("📊 Interpretation")
     
     if "objective" in result.purpose.tone.lower():
         st.success("✅ The content appears to maintain an objective tone.")
