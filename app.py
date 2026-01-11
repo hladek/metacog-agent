@@ -114,8 +114,90 @@ if page == "Home":
     
     # Show current analysis info if available
     if st.session_state.analysis_result:
+        result = st.session_state.analysis_result
         st.markdown("---")
         st.info(f"**Currently analyzing:** {st.session_state.blog_url}")
+        
+        st.markdown("---")
+        st.subheader("📋 Blog Metainformation")
+        
+        # URL Section
+        st.markdown("**🔗 Source URL**")
+        st.code(result.url, language=None)
+        
+        # Author Information
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**👤 Author**")
+            author_name = result.metadata.author_name or "Unknown"
+            if result.metadata.is_anonymous:
+                st.markdown(f"🕶️ Anonymous or unidentified author")
+            else:
+                st.markdown(f"✓ **{author_name}**")
+            
+            affiliation = result.metadata.author_affiliation
+            if affiliation and affiliation not in ["Unknown", "None"]:
+                st.markdown(f"_Affiliation:_ {affiliation}")
+        
+        with col2:
+            st.markdown("**🏢 Publisher**")
+            publisher = result.metadata.publisher_name or "Not specified"
+            st.markdown(f"**{publisher}**")
+            
+            if result.metadata.blog_name and result.metadata.blog_name != publisher:
+                st.markdown(f"_Blog:_ {result.metadata.blog_name}")
+        
+        # Publication Date
+        st.markdown("**📅 Publication Date**")
+        pub_date = result.metadata.publishing_date or "Not specified"
+        
+        if pub_date != "Not specified":
+            try:
+                from datetime import datetime
+                import re
+                date_match = re.search(r'\d{4}-\d{2}-\d{2}', pub_date)
+                if date_match:
+                    parsed_date = datetime.strptime(date_match.group(), '%Y-%m-%d')
+                    days_ago = (datetime.now() - parsed_date).days
+                    
+                    if days_ago == 0:
+                        time_ago = "Published today"
+                    elif days_ago == 1:
+                        time_ago = "Published yesterday"
+                    elif days_ago < 7:
+                        time_ago = f"Published {days_ago} days ago"
+                    elif days_ago < 30:
+                        weeks = days_ago // 7
+                        time_ago = f"Published {weeks} week{'s' if weeks > 1 else ''} ago"
+                    elif days_ago < 365:
+                        months = days_ago // 30
+                        time_ago = f"Published {months} month{'s' if months > 1 else ''} ago"
+                    else:
+                        years = days_ago // 365
+                        time_ago = f"Published {years} year{'s' if years > 1 else ''} ago"
+                    
+                    st.markdown(f"**{pub_date[:10]}** — _{time_ago}_")
+                else:
+                    st.markdown(f"**{pub_date}**")
+            except:
+                st.markdown(f"**{pub_date}**")
+        else:
+            st.markdown("**Not specified**")
+        
+        # Content Information
+        st.markdown("**📝 Content**")
+        if st.session_state.blog_content:
+            word_count = len(st.session_state.blog_content.split())
+            read_time = max(1, word_count // 200)
+            st.markdown(f"Word count: {word_count:,} words · Reading time: ~{read_time} minute{'s' if read_time > 1 else ''}")
+        
+        # Content summary
+        st.markdown("**📋 Summary**")
+        if result.metadata.summary:
+            st.write(result.metadata.summary)
+        else:
+            st.info("_No summary available_")
 
 # Currency page (includes metadata and timeliness)
 elif page == "Currency":
@@ -128,22 +210,22 @@ elif page == "Currency":
     """)
     
     # Quick tutorial
-    with st.expander("💡 How to Evaluate Currency"):
-        st.markdown("""
-        
-        1. **Author Identity**
-           - Is the author identified or anonymous?
-           - What institution or organization is the author associated with?
-        2. **Publisher/Platform** 
-           - Where is this content published?
-           - Is the publisher reputable?
-        3. **Publication Date** 
-           - When was the content published?
-           - How current is the information for this topic?
-           - Is the blog regularly maintained?
-        4. **Content Overview**
-           - Understand the scope and main points of the text
-        """)
+    st.markdown("### 💡 How to Evaluate Currency")
+    st.markdown("""
+    
+    1. **Author Identity**
+       - Is the author identified or anonymous?
+       - What institution or organization is the author associated with?
+    2. **Publisher/Platform** 
+       - Where is this content published?
+       - Is the publisher reputable?
+    3. **Publication Date** 
+       - When was the content published?
+       - How current is the information for this topic?
+       - Is the blog regularly maintained?
+    4. **Content Overview**
+       - Understand the scope and main points of the text
+    """)
     
     st.markdown("---")
     
@@ -284,30 +366,30 @@ elif page == "Relevance":
     """)
     
     # Quick tutorial
-    with st.expander("💡 How to Evaluate Relevance"):
-        st.markdown("""
-        
-        1. **Does it relate to your topic?**
-           - Is the content directly relevant to your research question or information need?
-           - Does it cover the specific aspects you're investigating?
-        
-        2. **Who is the intended audience?**
-           - Is it written for experts, students, or general public?
-           - Does the level of complexity match your needs?
-        
-        3. **Is it at the right level?**
-           - Too basic: Oversimplified or lacks depth?
-           - Too advanced: Technical jargon you don't understand?
-           - Just right: Matches your knowledge level and purpose
-        
-        4. **Have you looked at other sources?**
-           - Did you compare multiple sources before choosing this one?
-           - Is this the best available source for your needs?
-        
-        5. **Would you cite this in your work?**
-           - Is the information substantial enough to support your argument?
-           - Does it add value to your research or project?
-        """)
+    st.markdown("### 💡 How to Evaluate Relevance")
+    st.markdown("""
+    
+    1. **Does it relate to your topic?**
+       - Is the content directly relevant to your research question or information need?
+       - Does it cover the specific aspects you're investigating?
+    
+    2. **Who is the intended audience?**
+       - Is it written for experts, students, or general public?
+       - Does the level of complexity match your needs?
+    
+    3. **Is it at the right level?**
+       - Too basic: Oversimplified or lacks depth?
+       - Too advanced: Technical jargon you don't understand?
+       - Just right: Matches your knowledge level and purpose
+    
+    4. **Have you looked at other sources?**
+       - Did you compare multiple sources before choosing this one?
+       - Is this the best available source for your needs?
+    
+    5. **Would you cite this in your work?**
+       - Is the information substantial enough to support your argument?
+       - Does it add value to your research or project?
+    """)
     
     st.markdown("---")
     
@@ -345,34 +427,34 @@ elif page == "Authority":
     """)
     
     # Quick tutorial
-    with st.expander("💡 How to Evaluate Authority"):
-        st.markdown("""
-        
-        1. **Who is the author?**
-           - Is the author clearly identified?
-           - What are their credentials, qualifications, or expertise?
-           - Can you find information about them elsewhere?
-        
-        2. **What are their credentials?**
-           - Do they have relevant education or professional experience?
-           - Are they affiliated with a reputable institution or organization?
-           - Have they published other work on this topic?
-        
-        3. **Who is the publisher or sponsor?**
-           - What organization published or hosts this content?
-           - Is the publisher reputable in this field?
-           - What is their mission and purpose?
-        
-        4. **What is the domain/URL?**
-           - .edu (educational), .gov (government), .org (organization), .com (commercial)
-           - Does the domain match what you'd expect for this content?
-           - Is it a well-known, established site?
-        
-        5. **Can you verify their expertise?**
-           - Search for the author's name online
-           - Check for reviews, citations, or professional profiles
-           - Look for bias, conflicts of interest, or controversial reputation
-        """)
+    st.markdown("### 💡 How to Evaluate Authority")
+    st.markdown("""
+    
+    1. **Who is the author?**
+       - Is the author clearly identified?
+       - What are their credentials, qualifications, or expertise?
+       - Can you find information about them elsewhere?
+    
+    2. **What are their credentials?**
+       - Do they have relevant education or professional experience?
+       - Are they affiliated with a reputable institution or organization?
+       - Have they published other work on this topic?
+    
+    3. **Who is the publisher or sponsor?**
+       - What organization published or hosts this content?
+       - Is the publisher reputable in this field?
+       - What is their mission and purpose?
+    
+    4. **What is the domain/URL?**
+       - .edu (educational), .gov (government), .org (organization), .com (commercial)
+       - Does the domain match what you'd expect for this content?
+       - Is it a well-known, established site?
+    
+    5. **Can you verify their expertise?**
+       - Search for the author's name online
+       - Check for reviews, citations, or professional profiles
+       - Look for bias, conflicts of interest, or controversial reputation
+    """)
     
     st.markdown("---")
     
@@ -446,34 +528,34 @@ elif page == "Accuracy":
     """)
     
     # Quick tutorial
-    with st.expander("💡 How to Evaluate Accuracy"):
-        st.markdown("""
-        
-        1. **Where does the information come from?**
-           - Are sources clearly cited and documented?
-           - Can you verify the information in other sources?
-           - Are there links to original research or data?
-        
-        2. **Is the information supported by evidence?**
-           - Are claims backed up with facts, data, or research?
-           - Can you distinguish between facts and opinions?
-           - Are statistics and data presented with context?
-        
-        3. **Can you verify the information?**
-           - Can you find the same information in other reliable sources?
-           - Do the sources cited actually support the claims made?
-           - Can you trace information back to the original source?
-        
-        4. **Has it been reviewed or refereed?**
-           - Has the content been peer-reviewed or fact-checked?
-           - Is there editorial oversight or quality control?
-           - Are corrections or updates clearly noted?
-        
-        5. **Does the content appear reliable?**
-           - Is the writing clear and free of errors (spelling, grammar)?
-           - Does it seem objective and balanced?
-           - Are there obvious signs of bias, exaggeration, or misinformation?
-        """)
+    st.markdown("### 💡 How to Evaluate Accuracy")
+    st.markdown("""
+    
+    1. **Where does the information come from?**
+       - Are sources clearly cited and documented?
+       - Can you verify the information in other sources?
+       - Are there links to original research or data?
+    
+    2. **Is the information supported by evidence?**
+       - Are claims backed up with facts, data, or research?
+       - Can you distinguish between facts and opinions?
+       - Are statistics and data presented with context?
+    
+    3. **Can you verify the information?**
+       - Can you find the same information in other reliable sources?
+       - Do the sources cited actually support the claims made?
+       - Can you trace information back to the original source?
+    
+    4. **Has it been reviewed or refereed?**
+       - Has the content been peer-reviewed or fact-checked?
+       - Is there editorial oversight or quality control?
+       - Are corrections or updates clearly noted?
+    
+    5. **Does the content appear reliable?**
+       - Is the writing clear and free of errors (spelling, grammar)?
+       - Does it seem objective and balanced?
+       - Are there obvious signs of bias, exaggeration, or misinformation?
+    """)
     
     st.markdown("---")
     
@@ -531,34 +613,34 @@ elif page == "Purpose":
     """)
     
     # Quick tutorial
-    with st.expander("💡 How to Evaluate Purpose"):
-        st.markdown("""
-        
-        1. **What is the purpose of the information?**
-           - To inform, teach, or educate?
-           - To persuade, sell, or advocate?
-           - To entertain or express opinions?
-        
-        2. **Do the authors make their intentions clear?**
-           - Is the purpose explicitly stated?
-           - Is it an advertisement, opinion piece, or factual report?
-           - Are there hidden agendas or conflicts of interest?
-        
-        3. **Is the information fact, opinion, or propaganda?**
-           - Are claims presented as facts backed by evidence?
-           - Is the content primarily opinion or commentary?
-           - Does it use emotional language or manipulation?
-        
-        4. **Does the point of view appear objective and impartial?**
-           - Is more than one perspective presented?
-           - Does the author acknowledge limitations or counterarguments?
-           - Is the language neutral or emotionally charged?
-        
-        5. **Are there political, ideological, or commercial biases?**
-           - Who benefits from this information?
-           - Is there advertising or sponsored content?
-           - Does the author or publisher have a known bias?
-        """)
+    st.markdown("### 💡 How to Evaluate Purpose")
+    st.markdown("""
+    
+    1. **What is the purpose of the information?**
+       - To inform, teach, or educate?
+       - To persuade, sell, or advocate?
+       - To entertain or express opinions?
+    
+    2. **Do the authors make their intentions clear?**
+       - Is the purpose explicitly stated?
+       - Is it an advertisement, opinion piece, or factual report?
+       - Are there hidden agendas or conflicts of interest?
+    
+    3. **Is the information fact, opinion, or propaganda?**
+       - Are claims presented as facts backed by evidence?
+       - Is the content primarily opinion or commentary?
+       - Does it use emotional language or manipulation?
+    
+    4. **Does the point of view appear objective and impartial?**
+       - Is more than one perspective presented?
+       - Does the author acknowledge limitations or counterarguments?
+       - Is the language neutral or emotionally charged?
+    
+    5. **Are there political, ideological, or commercial biases?**
+       - Who benefits from this information?
+       - Is there advertising or sponsored content?
+       - Does the author or publisher have a known bias?
+    """)
     
     st.markdown("---")
     
