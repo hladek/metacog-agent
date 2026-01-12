@@ -212,52 +212,14 @@ elif page == "Currency":
     # Quick tutorial
     st.markdown("### 💡 How to Evaluate Currency")
     st.markdown("""
-    
-    1. **Author Identity**
-       - Is the author identified or anonymous?
-       - What institution or organization is the author associated with?
-    2. **Publisher/Platform** 
-       - Where is this content published?
-       - Is the publisher reputable?
-    3. **Publication Date** 
+     **Publication Date** 
        - When was the content published?
        - How current is the information for this topic?
        - Is the blog regularly maintained?
-    4. **Content Overview**
-       - Understand the scope and main points of the text
     """)
     
     st.markdown("---")
     
-    # URL Section
-    st.subheader("🔗 Source URL")
-    st.code(result.url, language=None)
-    
-    st.markdown("---")
-    
-    # Author Information
-    st.subheader("👤 Author")
-    author_name = result.metadata.author_name or "Unknown"
-    if result.metadata.is_anonymous:
-        st.warning(f"🕶️ Anonymous or unidentified author")
-    else:
-        st.success(f"✓ **{author_name}**")
-    
-    affiliation = result.metadata.author_affiliation
-    if affiliation and affiliation not in ["Unknown", "None"]:
-        st.markdown(f"**Affiliation:** {affiliation}")
-    
-    st.markdown("---")
-    
-    # Publisher Information
-    st.subheader("🏢 Publisher")
-    publisher = result.metadata.publisher_name or "Not specified"
-    st.markdown(f"**{publisher}**")
-    
-    if result.metadata.blog_name and result.metadata.blog_name != publisher:
-        st.markdown(f"**Blog:** {result.metadata.blog_name}")
-    
-    st.markdown("---")
     
     # Publication Date & Timeliness
     st.subheader("📅 Publication Date & Timeliness")
@@ -312,49 +274,6 @@ elif page == "Currency":
     
     st.markdown("---")
     
-    # Content Information
-    st.subheader("📝 Content")
-    if st.session_state.blog_content:
-        word_count = len(st.session_state.blog_content.split())
-        read_time = max(1, word_count // 200)
-        st.markdown(f"**Word count:** {word_count:,} words")
-        st.markdown(f"**Reading time:** ~{read_time} minute{'s' if read_time > 1 else ''}")
-    
-    st.markdown("---")
-    
-    # Content summary
-    st.subheader("📋 Summary")
-    if result.metadata.summary:
-        st.write(result.metadata.summary)
-    else:
-        st.info("_No summary available_")
-    
-    # Important technical details
-    if result.raw_metadata:
-        st.markdown("---")
-        with st.expander("🔍 Additional Technical Details"):
-            # Extract only important technical details
-            important_fields = {
-                'title': 'Title',
-                'description': 'Description',
-                'keywords': 'Keywords',
-                'language': 'Language',
-                'content_type': 'Content Type',
-                'charset': 'Character Encoding',
-                'canonical_url': 'Canonical URL'
-            }
-            
-            details_found = False
-            for key, label in important_fields.items():
-                if key in result.raw_metadata and result.raw_metadata[key]:
-                    value = result.raw_metadata[key]
-                    if isinstance(value, list):
-                        value = ', '.join(str(v) for v in value)
-                    st.markdown(f"**{label}:** {value}")
-                    details_found = True
-            
-            if not details_found:
-                st.info("No additional technical details available")
 
 # Relevance page
 elif page == "Relevance":
