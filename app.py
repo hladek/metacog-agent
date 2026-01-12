@@ -4,6 +4,7 @@ Streamlit application for CRAAP blog analysis.
 
 import streamlit as st
 import asyncio
+import re
 from craap_api import analyze_blog, download_blog, CRAAPAnalysisResult
 
 # Page configuration
@@ -21,6 +22,7 @@ if 'blog_content' not in st.session_state:
     st.session_state.blog_content = None
 if 'blog_url' not in st.session_state:
     st.session_state.blog_url = None
+
 
 # Sidebar navigation
 st.sidebar.title("📰 CRAAP Analyzer")
@@ -289,7 +291,12 @@ elif page == "Currency":
     if result.currency.examples:
         st.markdown("---")
         st.subheader("📝 Examples")
-        st.markdown(result.currency.examples)
+        examples_list = result.currency.examples
+        if examples_list:
+            for example in examples_list:
+                st.markdown(f"- {example}")
+        else:
+            st.markdown(result.currency.examples)
     
     # Currency assessment
     if result.currency.requires_current_info and not result.currency.is_maintained:
@@ -517,8 +524,32 @@ elif page == "Accuracy":
     
     st.markdown("---")
     
+    st.subheader("Verify by yourself")
+
+    if result.accuracy.verifiable_facts and len(result.accuracy.verifiable_facts) > 0:
+        st.subheader("✓ Verifiable Facts")
+        for i, fact in enumerate(result.accuracy.verifiable_facts, 1):
+            st.markdown(f"**{i}.** {fact}")
+            if result.accuracy.search_urls and i <= len(result.accuracy.search_urls):
+                st.markdown(f"🔍 [Verify this fact]({result.accuracy.search_urls[i-1]})")
+        st.markdown("---")
+    
     st.subheader("What AI Agent Analysis Shows")
     
+    score = sum([
+        result.accuracy.has_sources,
+        result.accuracy.verifiable,
+        result.accuracy.error_free
+    ])
+    
+    if score == 3:
+        st.success("✅ High accuracy: Content has sources, is verifiable, and appears error-free.")
+    elif score == 2:
+        st.warning("⚠️ Moderate accuracy: Some concerns identified. Review carefully.")
+    else:
+        st.error("❌ Low accuracy: Multiple concerns identified. Use with caution.")
+    
+    st.markdown("---")
     st.subheader("📈 Key Metrics")
     
     col1, col2, col3 = st.columns(3)
@@ -548,20 +579,6 @@ elif page == "Accuracy":
     
     st.markdown("---")
     
-    st.subheader("📊 Overall Assessment")
-    
-    score = sum([
-        result.accuracy.has_sources,
-        result.accuracy.verifiable,
-        result.accuracy.error_free
-    ])
-    
-    if score == 3:
-        st.success("✅ High accuracy: Content has sources, is verifiable, and appears error-free.")
-    elif score == 2:
-        st.warning("⚠️ Moderate accuracy: Some concerns identified. Review carefully.")
-    else:
-        st.error("❌ Low accuracy: Multiple concerns identified. Use with caution.")
 
 # Purpose page
 elif page == "Purpose":
@@ -608,7 +625,12 @@ elif page == "Purpose":
     
     if result.purpose.justification:
         st.subheader("📝 Justification")
-        st.markdown(result.purpose.justification)
+        justification_list = result.purpose.justification
+        if justification_list:
+            for item in justification_list:
+                st.markdown(f"- {item}")
+        else:
+            st.markdown(result.purpose.justification)
         st.markdown("---")
     
     st.subheader("📊 Interpretation")
