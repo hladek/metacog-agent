@@ -40,6 +40,7 @@ class CurrencyInfo(BaseModel):
     published_date: str = Field(description="When the blog post was published")
     last_updated: str = Field(description="When the blog post was last updated")
     has_recent_references: bool = Field(description="Whether the blog has recent references")
+    examples: str = Field(description="Examples that support the decision")
 
 
 class IntentInfo(BaseModel):
@@ -50,6 +51,8 @@ class IntentInfo(BaseModel):
     bias: str = Field(description="Bias towards social and political groups")
     sentiment: str = Field(description="Overall sentiment of the text")
     hate: str = Field(description="Analysis of hate speech or politically incorrect speech")
+    justification: str = Field(description="Justificaiton of the decision with exmaples from text")
+
 
 
 class BlogMetadata(BaseModel):
@@ -81,6 +84,8 @@ class AuthorityVerdict(BaseModel):
     negative_mentions: str
     sources: str
     summary: str
+    search_url: str
+    justification: str
 
 
 class PublisherVerdict(BaseModel):
@@ -92,7 +97,7 @@ class PublisherVerdict(BaseModel):
     factual_reliability: str
     public_perception: str
     summary: str
-
+    search_url: str
 
 @dataclass
 class CRAAPAnalysisResult:
@@ -217,6 +222,7 @@ Your task:
 2. Assess if the blog appears to be actively maintained
 3. Identify all dates mentioned: publication date, last update, and reference dates
 4. Evaluate if references and sources are recent
+5. Provide examples from text and justifications  that support your decision.
 
 Look for:
 - Explicit publication/update timestamps
@@ -312,6 +318,7 @@ Author intent to evaluate:
 - Is the language inflammatory or deliberately polarizing?
 
 Provide descriptive assessments. Use "None detected" or "Not present" rather than "Unknown" when elements are absent.
+Provide also justification of your decision with examples.
 
 Content to analyze:
 {text[:2000] if text else "No content available"}
@@ -387,6 +394,8 @@ Conduct an objective, evidence-based investigation of the individual's public re
 - **Positive Mentions**: Key achievements and favorable coverage with sources
 - **Negative Mentions**: Controversies or concerns with context and sources
 - **Sources**: List of primary sources consulted with credibility assessment
+- **Search URL** Url to google Search with appropriate query
+- ** Justification ** Justification of the decision
 - **Summary**: Balanced 2-3 paragraph synthesis weighing source credibility, recency, and frequency of mentions
 """
     
@@ -476,6 +485,7 @@ Conduct comprehensive research to evaluate the publisher's credibility, transpar
 - **Political Bias**: Classification of political leaning with evidence and degree of bias
 - **Factual Reliability**: Evaluation of accuracy track record with documented examples of fact-checking assessments
 - **Public Perception**: Summary of reputation among experts, awards, and any significant controversies
+- ** Search URL ** URL to Google search with proper query to search for the publisher.
 - **Summary**: Balanced 2-3 paragraph overall assessment with credibility rating (High/Medium/Low) and key considerations for readers
 """
     

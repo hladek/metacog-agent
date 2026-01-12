@@ -241,6 +241,7 @@ elif page == "Currency":
     
     st.markdown("---")
     
+    st.subheader("What AI Agent Analysis Shows")
     
     # Publication Date & Timeliness
     st.subheader("📅 Publication Date & Timeliness")
@@ -284,6 +285,11 @@ elif page == "Currency":
     st.markdown(f"**Requires Current Info:** {'Yes' if result.currency.requires_current_info else 'No'}")
     st.markdown(f"**Is Maintained:** {'Yes' if result.currency.is_maintained else 'No'}")
     st.markdown(f"**Has Recent References:** {'Yes' if result.currency.has_recent_references else 'No'}")
+    
+    if result.currency.examples:
+        st.markdown("---")
+        st.subheader("📝 Examples")
+        st.markdown(result.currency.examples)
     
     # Currency assessment
     if result.currency.requires_current_info and not result.currency.is_maintained:
@@ -332,6 +338,8 @@ elif page == "Relevance":
     """)
     
     st.markdown("---")
+    
+    st.subheader("What AI Agent Analysis Shows")
     
     st.subheader("📋 Content Summary")
     st.markdown(result.metadata.summary)
@@ -391,6 +399,16 @@ elif page == "Authority":
     
     st.markdown("---")
     
+    if result.author_authority:
+        st.subheader("Search for author info by yourself")
+        if result.author_authority.search_url:
+            st.markdown(f"🔍 **[View Web Search Results]({result.author_authority.search_url})**")
+    if result.publisher_authority:
+        st.subheader("Search for publisher info by yourself")
+        if result.publisher_authority.search_url:
+            st.markdown(f"🔍 **[View Web Search Results]({result.publisher_authority.search_url})**")
+    st.subheader("What AI Agent Analysis Shows")
+    
     # Author Authority
     st.subheader("👤 Author Authority")
     
@@ -415,6 +433,12 @@ elif page == "Authority":
         
         st.subheader("📊 Author Summary")
         st.info(result.author_authority.summary)
+        
+        
+        if result.author_authority.justification:
+            st.markdown("---")
+            st.subheader("📝 Justification")
+            st.markdown(result.author_authority.justification)
     else:
         st.warning("⚠️ Author authority analysis not available.")
     
@@ -448,6 +472,7 @@ elif page == "Authority":
         
         st.subheader("📊 Publisher Summary")
         st.info(result.publisher_authority.summary)
+        
     else:
         st.warning("⚠️ Publisher authority analysis not available.")
 
@@ -491,6 +516,8 @@ elif page == "Accuracy":
     """)
     
     st.markdown("---")
+    
+    st.subheader("What AI Agent Analysis Shows")
     
     st.subheader("📈 Key Metrics")
     
@@ -577,20 +604,12 @@ elif page == "Purpose":
     
     st.markdown("---")
     
-    col1, col2 = st.columns(2)
+    st.subheader("What AI Agent Analysis Shows")
     
-    with col1:
-        st.subheader("✍️ Writing Style")
-        st.markdown(f"**Tone:** {result.purpose.tone}")
-        st.markdown(f"**Style:** {result.purpose.style}")
-        st.markdown(f"**Sentiment:** {result.purpose.sentiment}")
-    
-    with col2:
-        st.subheader("⚖️ Bias Analysis")
-        st.markdown(f"**Bias:** {result.purpose.bias}")
-        st.markdown(f"**Hate Speech Analysis:** {result.purpose.hate}")
-    
-    st.markdown("---")
+    if result.purpose.justification:
+        st.subheader("📝 Justification")
+        st.markdown(result.purpose.justification)
+        st.markdown("---")
     
     st.subheader("📊 Interpretation")
     
@@ -608,3 +627,18 @@ elif page == "Purpose":
         st.success("✅ No hate speech or inappropriate content detected.")
     else:
         st.error(f"❌ Concerning content detected: {result.purpose.hate}")
+    col1, col2 = st.columns(2)
+    
+    st.markdown("---")
+    with col1:
+        st.subheader("✍️ Writing Style")
+        st.markdown(f"**Tone:** {result.purpose.tone}")
+        st.markdown(f"**Style:** {result.purpose.style}")
+        st.markdown(f"**Sentiment:** {result.purpose.sentiment}")
+    
+    with col2:
+        st.subheader("⚖️ Bias Analysis")
+        st.markdown(f"**Bias:** {result.purpose.bias}")
+        st.markdown(f"**Hate Speech Analysis:** {result.purpose.hate}")
+    
+    
