@@ -30,6 +30,8 @@ class AccuracyInfo(BaseModel):
     verifiable: bool = Field(description="Whether the content can be verified through other sources")
     error_free: bool = Field(description="Whether the writing is free of obvious errors")
     facts_vs_opinions: str = Field(description="Analysis of how facts and opinions are distinguished")
+    verifiable_facts: list[str] = Field(description="list of facts that can be verified")
+    search_urls: list[str] = Field(description="URL to google search with a query to verify each fact. ")
 
 
 class CurrencyInfo(BaseModel):
@@ -262,9 +264,11 @@ Evaluate the accuracy and credibility of this blog content.
 
 Your task:
 1. Identify if sources, citations, data, or evidence are provided
-2. Determine if claims can be verified through external trustworthy sources
-3. Detect obvious errors, contradictions, or inconsistencies in the writing
-4. Assess how the author distinguishes facts from opinions
+2. Detect obvious errors, contradictions, or inconsistencies in the writing
+3. Assess how the author distinguishes facts from opinions
+4. Determine if claims can be verified through external trustworthy sources
+5. Provide a list of three claim that can be verified from external sources. Pick non-trivial facts that can serve as evidence of author's truthfulness.
+6. Provide an URL to Google search for each fact that could verify the truthfullness of the fact. 
 
 Look for:
 - Academic or journalistic citations (footnotes, references, links)
