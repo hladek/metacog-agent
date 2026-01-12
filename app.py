@@ -212,10 +212,31 @@ elif page == "Currency":
     # Quick tutorial
     st.markdown("### 💡 How to Evaluate Currency")
     st.markdown("""
-     **Publication Date** 
-       - When was the content published?
-       - How current is the information for this topic?
-       - Is the blog regularly maintained?
+    
+    1. **When was the information published or last updated?**
+       - Look for publication and update dates on the page
+       - Is there a clear timestamp visible on the content?
+       - If the topic requires current information, is the content recent enough?
+    
+    2. **Is the information current enough for your topic?**
+       - For rapidly changing fields (technology, medicine, current events), recent content is critical
+       - For historical or stable topics, older content may still be valuable
+       - Consider: Does this topic require the latest information?
+    
+    3. **Are the links and references still working?**
+       - Broken links may indicate outdated or unmaintained content
+       - Check if cited sources are still accessible
+       - Dead links suggest the information may be stale
+    
+    4. **Has the information been revised or updated?**
+       - Does the author maintain and update the content?
+       - Are there update notes or revision histories?
+       - Is there evidence of ongoing maintenance?
+    
+    5. **Is the information outdated for your purpose?**
+       - Even if published recently, is the content itself outdated?
+       - Does it reference old standards, deprecated technologies, or superseded research?
+       - Compare with other current sources on the same topic
     """)
     
     st.markdown("---")
@@ -328,13 +349,6 @@ elif page == "Relevance":
     with col2:
         st.markdown(f"**Publisher Type:** {result.metadata.publisher_name}")
         st.markdown(f"**Author Affiliation:** {result.metadata.author_affiliation}")
-    
-    st.markdown("---")
-    
-    st.subheader("📊 Assessment")
-    st.info("💡 Consider whether this content matches your research needs and expertise level.")
-    st.subheader("📊 Assessment")
-    st.info("💡 Consider whether this content matches your research needs and expertise level.")
 
 # Authority page
 elif page == "Authority":
