@@ -42,7 +42,8 @@ class CurrencyInfo(BaseModel):
     published_date: str = Field(description="When the blog post was published")
     last_updated: str = Field(description="When the blog post was last updated")
     has_recent_references: bool = Field(description="Whether the blog has recent references")
-    examples: list[str] = Field(description="Citations that support the decision with justifications.")
+    examples: list[str] = Field(description="Notable citations that support the decision")
+    justifications: list[str] = Field(description="Citations that support the decision with justifications.")
 
 
 class IntentInfo(BaseModel):
@@ -53,7 +54,7 @@ class IntentInfo(BaseModel):
     bias: str = Field(description="Bias towards social and political groups")
     sentiment: str = Field(description="Overall sentiment of the text")
     hate: str = Field(description="Analysis of hate speech or politically incorrect speech")
-    justification: list[str] = Field(description="Justification of the decision with exmaples from text")
+    justifications: list[str] = Field(description="Justification of the decision with examples from text")
 
 
 

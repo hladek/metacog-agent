@@ -242,9 +242,46 @@ elif page == "Currency":
     """)
     
     st.markdown("---")
+
+    st.subheader("Do it yourself")
     
+
+    st.markdown("Search for the following parts in the text. Use the context to asses the currency of the text")
+
+    
+    
+    if result.currency.examples:
+        st.markdown("---")
+        st.subheader("📝 Examples")
+        examples_list = result.currency.examples
+        if examples_list:
+            for example in examples_list:
+                st.markdown(f"- {example}")
+
     st.subheader("What AI Agent Analysis Shows")
     
+    # Currency analysis
+    st.markdown(f"**Last Updated:** {result.currency.last_updated}")
+    st.markdown(f"**Requires Current Info:** {'Yes' if result.currency.requires_current_info else 'No'}")
+    st.markdown(f"**Is Maintained:** {'Yes' if result.currency.is_maintained else 'No'}")
+    st.markdown(f"**Has Recent References:** {'Yes' if result.currency.has_recent_references else 'No'}")
+    
+    if result.currency.justifications:
+        st.markdown("---")
+        st.subheader("📝 Examples")
+        examples_list = result.currency.justifications
+        if examples_list:
+            for example in examples_list:
+                st.markdown(f"- {example}")
+    
+    # Currency assessment
+    if result.currency.requires_current_info and not result.currency.is_maintained:
+        st.warning("⚠️ This topic requires current information, but the blog doesn't appear to be regularly maintained.")
+    elif result.currency.is_maintained and result.currency.has_recent_references:
+        st.success("✅ The blog appears to be well-maintained with recent references.")
+    else:
+        st.info("ℹ️ Consider the publication date when evaluating this content.")
+
     # Publication Date & Timeliness
     st.subheader("📅 Publication Date & Timeliness")
     pub_date = result.metadata.publishing_date or "Not specified"
@@ -282,29 +319,6 @@ elif page == "Currency":
     else:
         st.markdown("**Not specified**")
     
-    # Currency analysis
-    st.markdown(f"**Last Updated:** {result.currency.last_updated}")
-    st.markdown(f"**Requires Current Info:** {'Yes' if result.currency.requires_current_info else 'No'}")
-    st.markdown(f"**Is Maintained:** {'Yes' if result.currency.is_maintained else 'No'}")
-    st.markdown(f"**Has Recent References:** {'Yes' if result.currency.has_recent_references else 'No'}")
-    
-    if result.currency.examples:
-        st.markdown("---")
-        st.subheader("📝 Examples")
-        examples_list = result.currency.examples
-        if examples_list:
-            for example in examples_list:
-                st.markdown(f"- {example}")
-        else:
-            st.markdown(result.currency.examples)
-    
-    # Currency assessment
-    if result.currency.requires_current_info and not result.currency.is_maintained:
-        st.warning("⚠️ This topic requires current information, but the blog doesn't appear to be regularly maintained.")
-    elif result.currency.is_maintained and result.currency.has_recent_references:
-        st.success("✅ The blog appears to be well-maintained with recent references.")
-    else:
-        st.info("ℹ️ Consider the publication date when evaluating this content.")
     
     st.markdown("---")
     
@@ -346,24 +360,18 @@ elif page == "Relevance":
     
     st.markdown("---")
     
-    st.subheader("What AI Agent Analysis Shows")
-    
-    st.subheader("📋 Content Summary")
-    st.markdown(result.metadata.summary)
-    
-    st.markdown("---")
-    
-    st.subheader("🎓 Target Audience & Scope")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown(f"**Tone:** {result.purpose.tone}")
-        st.markdown(f"**Style:** {result.purpose.style}")
-    
-    with col2:
-        st.markdown(f"**Publisher Type:** {result.metadata.publisher_name}")
-        st.markdown(f"**Author Affiliation:** {result.metadata.author_affiliation}")
+    st.subheader("Do it yourself")
+
+    st.markdown("Write down answers to the following questions:")
+    st.markdown("""
+    - why do you search for this information?
+    - What kind of information do you need?
+    - What do you want to find in this material?
+
+    Then asses by yoursef, if the text is appropriate for your purpose.
+    """
+    )
+
 
 # Authority page
 elif page == "Authority":
@@ -405,15 +413,20 @@ elif page == "Authority":
     """)
     
     st.markdown("---")
+
+
+    st.subheader("Do it yourself")
+
+    
+    st.markdown("Search the internet for information about the author and publisher. You can use the following links as a starting point.")
     
     if result.author_authority:
-        st.subheader("Search for author info by yourself")
         if result.author_authority.search_url:
             st.markdown(f"🔍 **[View Web Search Results]({result.author_authority.search_url})**")
     if result.publisher_authority:
-        st.subheader("Search for publisher info by yourself")
         if result.publisher_authority.search_url:
             st.markdown(f"🔍 **[View Web Search Results]({result.publisher_authority.search_url})**")
+
     st.subheader("What AI Agent Analysis Shows")
     
     # Author Authority
@@ -524,15 +537,19 @@ elif page == "Accuracy":
     
     st.markdown("---")
     
-    st.subheader("Verify by yourself")
+    st.subheader("Do it yourself")
+
+    
+    st.markdown("Search the internet to verify the following claims from the text.")
 
     if result.accuracy.verifiable_facts and len(result.accuracy.verifiable_facts) > 0:
-        st.subheader("✓ Verifiable Facts")
         for i, fact in enumerate(result.accuracy.verifiable_facts, 1):
             st.markdown(f"**{i}.** {fact}")
             if result.accuracy.search_urls and i <= len(result.accuracy.search_urls):
                 st.markdown(f"🔍 [Verify this fact]({result.accuracy.search_urls[i-1]})")
-        st.markdown("---")
+    
+    st.markdown("Pick some facts by yourself and try to verify them from reputable sources, such as Wikipedia, Google Scholar or established media agencies. ")
+    st.markdown("---")
     
     st.subheader("What AI Agent Analysis Shows")
     
@@ -621,16 +638,19 @@ elif page == "Purpose":
     
     st.markdown("---")
     
+    st.subheader("Do it yourself")
+    st.markdown("Write down answers to the questions above.")
+    st.markdown("---")
     st.subheader("What AI Agent Analysis Shows")
     
-    if result.purpose.justification:
+    if result.purpose.justifications:
         st.subheader("📝 Justification")
-        justification_list = result.purpose.justification
+        justification_list = result.purpose.justifications
         if justification_list:
             for item in justification_list:
                 st.markdown(f"- {item}")
         else:
-            st.markdown(result.purpose.justification)
+            st.markdown(result.purpose.justifications)
         st.markdown("---")
     
     st.subheader("📊 Interpretation")
