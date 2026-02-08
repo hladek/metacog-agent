@@ -377,6 +377,44 @@ Provide a clear assessment in 3-4 sentences, explaining whether this blog is rel
     return result.final_output
 
 
+async def assess_user_purpose_analysis(blog_content: str, user_answers: str) -> str:
+    """
+    Assess the user's understanding of the blog's purpose compared to the actual content.
+    
+    Args:
+        blog_content: The full text of the blog
+        user_answers: User's answers about the blog's purpose, bias, and intent
+    
+    Returns:
+        String containing the purpose assessment
+    """
+    prompt = f"""
+You are evaluating a user's analysis of a blog post's purpose, intent, and bias.
+
+Blog Content:
+{blog_content[:3000]}...
+
+User's Answers about the blog's purpose:
+{user_answers}
+
+Based on the user's analysis and the actual blog content, assess:
+1. Did the user correctly identify the primary purpose of the blog (inform, persuade, sell, entertain)?
+2. Did the user accurately detect any biases (political, ideological, commercial)?
+3. Did the user appropriately evaluate the objectivity and tone of the content?
+4. Are there any important aspects of purpose or bias that the user missed?
+
+Provide a clear assessment in 3-4 sentences, explaining how well the user's analysis matches the actual purpose and bias of the blog.
+"""
+    
+    purpose_agent = Agent(
+        name="purpose_assessor",
+        instructions=prompt,
+        model_settings=ModelSettings(),
+    )
+    result = await Runner.run(purpose_agent, prompt)
+    return result.final_output
+
+
 # ============================================================================
 # Authority Analysis
 # ============================================================================

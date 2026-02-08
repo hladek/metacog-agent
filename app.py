@@ -6,7 +6,7 @@ import streamlit as st
 import asyncio
 from datetime import datetime
 import re
-from craap_api import analyze_blog, download_blog, CRAAPAnalysisResult, assess_user_relevance
+from craap_api import analyze_blog, download_blog, CRAAPAnalysisResult, assess_user_relevance, assess_user_purpose_analysis
 
 # Page configuration
 st.set_page_config(
@@ -661,6 +661,35 @@ elif page == "Purpose":
     
     st.subheader("Do it yourself")
     st.markdown("Write down answers to the questions above.")
+    
+    # User answer input section
+    st.markdown("---")
+    st.subheader("📝 Your Answers")
+    
+    user_purpose_answers = st.text_area(
+        "Write your analysis of the blog's purpose:",
+        placeholder="Example:\n- The purpose of this blog is to...\n- The author's intentions seem to be...\n- I detected bias toward/against...\n- The tone appears to be...",
+        height=150,
+        key="purpose_answers"
+    )
+    
+    if st.button("🤖 Assess Purpose Analysis with AI", type="primary", key="assess_purpose_btn"):
+        if not user_purpose_answers or user_purpose_answers.strip() == "":
+            st.warning("⚠️ Please write your answers before assessing.")
+        else:
+            with st.spinner("Analyzing your purpose assessment against the blog content..."):
+                try:
+                    assessment = asyncio.run(
+                        assess_user_purpose_analysis(st.session_state.blog_content, user_purpose_answers)
+                    )
+                    
+                    st.markdown("---")
+                    st.subheader("🤖 AI Purpose Assessment")
+                    st.info(assessment)
+                    
+                except Exception as e:
+                    st.error(f"Error during AI assessment: {str(e)}")
+    
     st.markdown("---")
     st.subheader("What AI Agent Analysis Shows")
     
@@ -674,15 +703,13 @@ elif page == "Purpose":
             st.markdown(result.purpose.justifications)
         st.markdown("---")
     
-    with col1:
-        st.subheader("✍️ Writing Style")
-        st.markdown(f"**Tone:** {result.purpose.tone}")
-        st.markdown(f"**Style:** {result.purpose.style}")
-        st.markdown(f"**Sentiment:** {result.purpose.sentiment}")
-    
-    with col2:
-        st.subheader("⚖️ Bias Analysis")
-        st.markdown(f"**Bias:** {result.purpose.bias}")
-        st.markdown(f"**Hate Speech Analysis:** {result.purpose.hate}")
+    st.subheader("✍️ Writing Style")
+    st.markdown(f"**Tone:** {result.purpose.tone}")
+    st.markdown(f"**Style:** {result.purpose.style}")
+    st.markdown(f"**Sentiment:** {result.purpose.sentiment}")
+
+    st.subheader("⚖️ Bias Analysis")
+    st.markdown(f"**Bias:** {result.purpose.bias}")
+    st.markdown(f"**Hate Speech Analysis:** {result.purpose.hate}")
     
     
