@@ -340,6 +340,43 @@ Content to analyze:
     return result.final_output
 
 
+async def assess_user_relevance(blog_content: str, user_answers: str) -> str:
+    """
+    Assess whether the blog content is relevant to the user's stated information needs.
+    
+    Args:
+        blog_content: The full text of the blog
+        user_answers: User's answers about their information needs
+    
+    Returns:
+        String containing the relevance assessment
+    """
+    prompt = f"""
+You are evaluating the relevance between a user's information needs and a blog post.
+
+Blog Content:
+{blog_content[:3000]}...
+
+User's Answers about their needs:
+{user_answers}
+
+Based on the user's stated needs and the blog content, assess:
+1. Does the blog content address the user's information needs?
+2. Is the blog content at an appropriate level for the user's purpose?
+3. Is this blog relevant for what the user is trying to find?
+
+Provide a clear assessment in 3-4 sentences, explaining whether this blog is relevant for the user's stated needs.
+"""
+    
+    relevance_agent = Agent(
+        name="relevance_assessor",
+        instructions=prompt,
+        model_settings=ModelSettings(),
+    )
+    result = await Runner.run(relevance_agent, prompt)
+    return result.final_output
+
+
 # ============================================================================
 # Authority Analysis
 # ============================================================================

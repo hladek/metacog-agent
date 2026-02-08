@@ -6,7 +6,7 @@ import streamlit as st
 import asyncio
 from datetime import datetime
 import re
-from craap_api import analyze_blog, download_blog, CRAAPAnalysisResult
+from craap_api import analyze_blog, download_blog, CRAAPAnalysisResult, assess_user_relevance
 
 # Page configuration
 st.set_page_config(
@@ -362,6 +362,34 @@ elif page == "Relevance":
     Then asses by yoursef, if the text is appropriate for your purpose.
     """
     )
+    
+    # User answer input section
+    st.markdown("---")
+    st.subheader("📝 Your Answers")
+    
+    user_answers = st.text_area(
+        "Write your answers to the questions above:",
+        placeholder="Example:\n- I'm searching for this information to learn about...\n- I need information that...\n- I want to find...",
+        height=150,
+        key="relevance_answers"
+    )
+    
+    if st.button("🤖 Assess Relevance with AI", type="primary", key="assess_relevance_btn"):
+        if not user_answers or user_answers.strip() == "":
+            st.warning("⚠️ Please write your answers before assessing.")
+        else:
+            with st.spinner("Analyzing relevance of your answers to the blog content..."):
+                try:
+                    assessment = asyncio.run(
+                        assess_user_relevance(st.session_state.blog_content, user_answers)
+                    )
+                    
+                    st.markdown("---")
+                    st.subheader("🤖 AI Relevance Assessment")
+                    st.info(assessment)
+                    
+                except Exception as e:
+                    st.error(f"Error during AI assessment: {str(e)}")
 
 
 # Authority page
