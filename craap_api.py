@@ -12,12 +12,23 @@ This module provides a comprehensive framework for analyzing blogs using the CRA
 import asyncio
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, asdict
+import json
+from pathlib import Path
+import os
 
 import sys
 import trafilatura
 from pydantic import BaseModel, Field
 
 from agents import Agent, Runner, ModelSettings, WebSearchTool, trace
+
+
+# ============================================================================
+# Configuration
+# ============================================================================
+
+# Output directory for analysis JSON files
+OUTPUT_DIR = os.environ.get("CRAAP_OUTPUT_DIR", "craap_results")
 
 
 # ============================================================================
@@ -642,7 +653,7 @@ async def analyze_blog(
             f"{metadata.author_name} {metadata.author_affiliation} {metadata.publisher_name}"
         )
     
-    return CRAAPAnalysisResult(
+    result = CRAAPAnalysisResult(
         url=url,
         metadata=metadata,
         currency=currency_info,
@@ -652,6 +663,14 @@ async def analyze_blog(
         publisher_authority=publisher_authority,
         raw_metadata=raw_metadata
     )
+    
+    # Automatically save to JSON file
+    try:
+        save_analysis_to_json(result)
+    except Exception as e:
+        print(f"Warning: Failed to save analysis to JSON: {e}")
+    
+    return result
 
 
 async def analyze_blog_batch(
@@ -758,6 +777,42 @@ def print_analysis_report(result: CRAAPAnalysisResult) -> None:
     print("\n" + "=" * 80)
 
 
+def save_analysis_to_json(result: CRAAPAnalysisResult, filepath: str = None) -> str:
+    """
+    Save CRAAP analysis result to a JSON file.
+    
+    Args:
+        result: CRAAPAnalysisResult object to save
+        filepath: Optional path to save the JSON file. If None, generates filename from timestamp
+                  and saves to configured output directory.
+    
+    Returns:
+        Absolute path to the saved file
+    """
+    from datetime import datetime
+    
+    # If no filepath provided, generate from timestamp in configured directory
+    if filepath is None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"craap_analysis_{timestamp}.json"
+        filepath = os.path.join(OUTPUT_DIR, filename)
+    
+    # Convert result to dictionary
+    result_dict = result.to_dict()
+    
+    # Convert to Path object for better path handling
+    output_path = Path(filepath)
+    
+    # Create parent directories if they don't exist
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Write to JSON file with pretty formatting
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(result_dict, f, indent=2, ensure_ascii=False)
+    
+    return str(output_path.absolute())
+
+
 # ============================================================================
 # Example Usage
 # ============================================================================
@@ -770,6 +825,9 @@ async def main():
     print(f"Analyzing: {url}")
     result = await analyze_blog(url)
     print_analysis_report(result)
+    
+    # Note: Analysis is automatically saved to timestamped JSON file
+    print(f"\n📄 Analysis automatically saved to timestamped JSON file")
 
 
 if __name__ == "__main__":

@@ -6,7 +6,8 @@ import streamlit as st
 import asyncio
 from datetime import datetime
 import re
-from craap_api import analyze_blog, download_blog, CRAAPAnalysisResult, assess_user_relevance, assess_user_purpose_analysis
+import json
+from craap_api import analyze_blog, download_blog, CRAAPAnalysisResult, assess_user_relevance, assess_user_purpose_analysis, save_analysis_to_json
 
 # Page configuration
 st.set_page_config(
