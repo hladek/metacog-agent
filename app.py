@@ -249,29 +249,8 @@ elif page == "Currency":
 
     
     
-    if result.currency.examples:
-        st.markdown("---")
-        st.subheader("📝 Examples")
-        examples_list = result.currency.examples
-        if examples_list:
-            for example in examples_list:
-                st.markdown(f"- {example}")
 
     st.subheader("What AI Agent Analysis Shows")
-    
-    # Currency analysis
-    st.markdown(f"**Last Updated:** {result.currency.last_updated}")
-    st.markdown(f"**Requires Current Info:** {'Yes' if result.currency.requires_current_info else 'No'}")
-    st.markdown(f"**Is Maintained:** {'Yes' if result.currency.is_maintained else 'No'}")
-    st.markdown(f"**Has Recent References:** {'Yes' if result.currency.has_recent_references else 'No'}")
-    
-    if result.currency.justifications:
-        st.markdown("---")
-        st.subheader("📝 Examples")
-        examples_list = result.currency.justifications
-        if examples_list:
-            for example in examples_list:
-                st.markdown(f"- {example}")
     
     # Currency assessment
     if result.currency.requires_current_info and not result.currency.is_maintained:
@@ -315,6 +294,21 @@ elif page == "Currency":
             st.markdown(f"**{pub_date}**")
     else:
         st.markdown("**Not specified**")
+    if result.currency.justifications:
+        st.markdown("---")
+        examples_list = result.currency.justifications
+        if examples_list:
+            for example in examples_list:
+                st.markdown(f"- {example}")
+    
+    if result.currency.examples:
+        st.markdown("---")
+        st.subheader("📝 Examples")
+        examples_list = result.currency.examples
+        if examples_list:
+            for example in examples_list:
+                st.markdown(f"- {example}")
+
     
     
     st.markdown("---")
@@ -413,16 +407,17 @@ elif page == "Authority":
 
 
     st.subheader("Do it yourself")
-
-    
-    st.markdown("Search the internet for information about the author and publisher. You can use the following links as a starting point.")
     
     if result.author_authority:
+        st.markdown("Search the internet for information about the author.")
         if result.author_authority.search_url:
-            st.markdown(f"🔍 **[View Web Search Results]({result.author_authority.search_url})**")
+            st.markdown("You can use the following link as a starting point.")
+            st.markdown(f"🔍 **[VSearch for author]({result.author_authority.search_url})**")
     if result.publisher_authority:
+        st.markdown("Search the internet for information about the publisher.")
         if result.publisher_authority.search_url:
-            st.markdown(f"🔍 **[View Web Search Results]({result.publisher_authority.search_url})**")
+            st.markdown("You can use the following link as a starting point.")
+            st.markdown(f"🔍 **[Search for publisher]({result.publisher_authority.search_url})**")
 
     st.subheader("What AI Agent Analysis Shows")
     
@@ -449,7 +444,7 @@ elif page == "Authority":
         st.markdown("---")
         
         st.subheader("📊 Author Summary")
-        st.info(result.author_authority.summary)
+        st.markdown(result.author_authority.summary)
         
         
         if result.author_authority.justification:
@@ -488,7 +483,7 @@ elif page == "Authority":
         st.markdown("---")
         
         st.subheader("📊 Publisher Summary")
-        st.info(result.publisher_authority.summary)
+        st.markdown(result.publisher_authority.summary)
         
     else:
         st.warning("⚠️ Publisher authority analysis not available.")
@@ -540,6 +535,7 @@ elif page == "Accuracy":
     st.markdown("Search the internet to verify the following claims from the text.")
 
     if result.accuracy.verifiable_facts and len(result.accuracy.verifiable_facts) > 0:
+        st.markdown("As a starting poinnt, use the provided links. You can also modify the search query to search evidence against the claim. ")
         for i, fact in enumerate(result.accuracy.verifiable_facts, 1):
             st.markdown(f"**{i}.** {fact}")
             if result.accuracy.search_urls and i <= len(result.accuracy.search_urls):
@@ -650,25 +646,6 @@ elif page == "Purpose":
             st.markdown(result.purpose.justifications)
         st.markdown("---")
     
-    st.subheader("📊 Interpretation")
-    
-    if "objective" in result.purpose.tone.lower():
-        st.success("✅ The content appears to maintain an objective tone.")
-    elif "opinion" in result.purpose.tone.lower():
-        st.info("ℹ️ The content is opinion-driven. Consider this when evaluating claims.")
-    
-    if "neutral" in result.purpose.bias.lower():
-        st.success("✅ No significant bias detected.")
-    else:
-        st.warning(f"⚠️ Potential bias detected: {result.purpose.bias}")
-    
-    if "none" in result.purpose.hate.lower() or "no hate" in result.purpose.hate.lower():
-        st.success("✅ No hate speech or inappropriate content detected.")
-    else:
-        st.error(f"❌ Concerning content detected: {result.purpose.hate}")
-    col1, col2 = st.columns(2)
-    
-    st.markdown("---")
     with col1:
         st.subheader("✍️ Writing Style")
         st.markdown(f"**Tone:** {result.purpose.tone}")
