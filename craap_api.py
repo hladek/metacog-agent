@@ -13,6 +13,7 @@ import asyncio
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, asdict
 
+import sys
 import trafilatura
 from pydantic import BaseModel, Field
 
@@ -688,7 +689,6 @@ def print_analysis_report(result: CRAAPAnalysisResult) -> None:
 
 async def main():
     """Example usage of the CRAAP API."""
-    import sys
     
     url = sys.argv[1] if len(sys.argv) > 1 else "https://example.com/blog"
     

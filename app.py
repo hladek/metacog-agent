@@ -4,6 +4,7 @@ Streamlit application for CRAAP blog analysis.
 
 import streamlit as st
 import asyncio
+from datetime import datetime
 import re
 from craap_api import analyze_blog, download_blog, CRAAPAnalysisResult
 
@@ -156,8 +157,6 @@ if page == "Home":
         
         if pub_date != "Not specified":
             try:
-                from datetime import datetime
-                import re
                 date_match = re.search(r'\d{4}-\d{2}-\d{2}', pub_date)
                 if date_match:
                     parsed_date = datetime.strptime(date_match.group(), '%Y-%m-%d')
@@ -288,8 +287,6 @@ elif page == "Currency":
     
     if pub_date != "Not specified":
         try:
-            from datetime import datetime
-            import re
             date_match = re.search(r'\d{4}-\d{2}-\d{2}', pub_date)
             if date_match:
                 parsed_date = datetime.strptime(date_match.group(), '%Y-%m-%d')
