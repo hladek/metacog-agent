@@ -800,6 +800,21 @@ def save_analysis_to_json(result: CRAAPAnalysisResult, filepath: str = None) -> 
     # Convert result to dictionary
     result_dict = result.to_dict()
     
+    # Clean raw_metadata to ensure JSON serializability
+    if 'raw_metadata' in result_dict and result_dict['raw_metadata']:
+        cleaned_metadata = {}
+        for key, value in result_dict['raw_metadata'].items():
+            # Skip None values and non-serializable objects
+            if value is None:
+                continue
+            # Convert to string if not already a JSON-serializable type
+            if isinstance(value, (str, int, float, bool, list, dict)):
+                cleaned_metadata[key] = value
+            else:
+                # Convert other types to string representation
+                cleaned_metadata[key] = str(value)
+        result_dict['raw_metadata'] = cleaned_metadata
+    
     # Convert to Path object for better path handling
     output_path = Path(filepath)
     
@@ -811,6 +826,54 @@ def save_analysis_to_json(result: CRAAPAnalysisResult, filepath: str = None) -> 
         json.dump(result_dict, f, indent=2, ensure_ascii=False)
     
     return str(output_path.absolute())
+
+
+def load_analysis_from_json(filepath: str) -> CRAAPAnalysisResult:
+    """
+    Load CRAAP analysis result from a JSON file.
+    
+    Args:
+        filepath: Path to the JSON file to load
+    
+    Returns:
+        CRAAPAnalysisResult object reconstructed from JSON
+    
+    Raises:
+        FileNotFoundError: If the file doesn't exist
+        ValueError: If the JSON is invalid or missing required fields
+    """
+    file_path = Path(filepath)
+    
+    if not file_path.exists():
+        raise FileNotFoundError(f"Analysis file not found: {filepath}")
+    
+    with open(file_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    
+    # Reconstruct the Pydantic models from dictionaries
+    metadata = BlogMetadata(**data['metadata'])
+    currency = CurrencyInfo(**data['currency'])
+    accuracy = AccuracyInfo(**data['accuracy'])
+    purpose = IntentInfo(**data['purpose'])
+    
+    author_authority = None
+    if data.get('author_authority'):
+        author_authority = AuthorityVerdict(**data['author_authority'])
+    
+    publisher_authority = None
+    if data.get('publisher_authority'):
+        publisher_authority = PublisherVerdict(**data['publisher_authority'])
+    
+    return CRAAPAnalysisResult(
+        url=data['url'],
+        metadata=metadata,
+        currency=currency,
+        accuracy=accuracy,
+        purpose=purpose,
+        author_authority=author_authority,
+        publisher_authority=publisher_authority,
+        raw_metadata=data.get('raw_metadata', {})
+    )
 
 
 # ============================================================================

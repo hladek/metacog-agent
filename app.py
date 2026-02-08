@@ -7,7 +7,8 @@ import asyncio
 from datetime import datetime
 import re
 import json
-from craap_api import analyze_blog, download_blog, CRAAPAnalysisResult, assess_user_relevance, assess_user_purpose_analysis, save_analysis_to_json
+from pathlib import Path
+from craap_api import analyze_blog, download_blog, CRAAPAnalysisResult, assess_user_relevance, assess_user_purpose_analysis, save_analysis_to_json, load_analysis_from_json, OUTPUT_DIR
 
 # Page configuration
 st.set_page_config(
@@ -115,6 +116,42 @@ if page == "Home":
                     st.rerun()
             except Exception as e:
                 st.error(f"Error during analysis: {str(e)}")
+    
+    # Load saved analysis section
+    st.markdown("---")
+    st.subheader("📂 Load Saved Analysis")
+    
+    # Get list of saved analysis files
+    output_dir = Path(OUTPUT_DIR)
+    if output_dir.exists():
+        json_files = sorted(output_dir.glob("*.json"), key=lambda x: x.stat().st_mtime, reverse=True)
+        
+        if json_files:
+            # Create a selectbox with file names
+            file_options = ["Select a file..."] + [f.name for f in json_files]
+            selected_file = st.selectbox("Choose a saved analysis:", file_options)
+            
+            col_load1, col_load2 = st.columns([1, 4])
+            with col_load1:
+                if st.button("📥 Load Analysis") and selected_file != "Select a file...":
+                    try:
+                        with st.spinner("Loading analysis..."):
+                            filepath = output_dir / selected_file
+                            result = load_analysis_from_json(str(filepath))
+                            
+                            st.session_state.analysis_result = result
+                            st.session_state.blog_url = result.url
+                            # Note: blog_content is not saved in JSON, set to None
+                            st.session_state.blog_content = None
+                            
+                            st.success(f"✅ Analysis loaded from {selected_file}")
+                            st.rerun()
+                    except Exception as e:
+                        st.error(f"Error loading analysis: {str(e)}")
+        else:
+            st.info("No saved analyses found. Analyze a blog to create one.")
+    else:
+        st.info(f"No saved analyses directory found. Directory will be created at: {OUTPUT_DIR}")
     
     # Show current analysis info if available
     if st.session_state.analysis_result:
