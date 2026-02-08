@@ -244,6 +244,7 @@ elif page == "Currency":
 
     st.subheader("Do it yourself")
     
+    st.info("💡 **Important:** When verifying information, use reputable sources such as:\n- Government websites (.gov)\n- Established news agencies (AP, Reuters, BBC, etc.)\n- Wikipedia for general information\n- Peer-reviewed research papers (Google Scholar, PubMed)\n- Fact-checking sites (Snopes, FactCheck.org)\n- Use trusted search engines and cross-reference multiple sources.")
 
     st.markdown("Search for the following parts in the text. Use the context to asses the currency of the text")
 
@@ -251,6 +252,8 @@ elif page == "Currency":
     
 
     st.subheader("What AI Agent Analysis Shows")
+    
+    st.warning("⚠️ **Note:** AI analysis has inherent biases and limitations. The outputs can be difficult to justify and explain. Use this as a supplementary tool, not the sole basis for evaluation.")
     
     # Currency assessment
     if result.currency.requires_current_info and not result.currency.is_maintained:
@@ -436,11 +439,13 @@ elif page == "Authority":
 
     st.subheader("Do it yourself")
     
+    st.info("💡 **Important:** When verifying information, use reputable sources such as:\n- Government websites (.gov)\n- Established news agencies (AP, Reuters, BBC, etc.)\n- Wikipedia for general information\n- Peer-reviewed research papers (Google Scholar, PubMed)\n- Fact-checking sites (Snopes, FactCheck.org)\n- Use trusted search engines and cross-reference multiple sources.")
+    
     if result.author_authority:
         st.markdown("Search the internet for information about the author.")
         if result.author_authority.search_url:
             st.markdown("You can use the following link as a starting point.")
-            st.markdown(f"🔍 **[VSearch for author]({result.author_authority.search_url})**")
+            st.markdown(f"🔍 **[Search for author]({result.author_authority.search_url})**")
     if result.publisher_authority:
         st.markdown("Search the internet for information about the publisher.")
         if result.publisher_authority.search_url:
@@ -448,6 +453,8 @@ elif page == "Authority":
             st.markdown(f"🔍 **[Search for publisher]({result.publisher_authority.search_url})**")
 
     st.subheader("What AI Agent Analysis Shows")
+    
+    st.warning("⚠️ **Note:** AI analysis has inherent biases and limitations. The outputs can be difficult to justify and explain. Use this as a supplementary tool, not the sole basis for evaluation.")
     
     # Author Authority
     st.subheader("👤 Author Authority")
@@ -559,6 +566,7 @@ elif page == "Accuracy":
     
     st.subheader("Do it yourself")
 
+    st.info("💡 **Important:** When verifying information, use reputable sources such as:\n- Government websites (.gov)\n- Established news agencies (AP, Reuters, BBC, etc.)\n- Wikipedia for general information\n- Peer-reviewed research papers (Google Scholar, PubMed)\n- Fact-checking sites (Snopes, FactCheck.org)\n- Use trusted search engines and cross-reference multiple sources.")
     
     st.markdown("Search the internet to verify the following claims from the text.")
 
@@ -573,6 +581,8 @@ elif page == "Accuracy":
     st.markdown("---")
     
     st.subheader("What AI Agent Analysis Shows")
+    
+    st.warning("⚠️ **Note:** AI analysis has inherent biases and limitations. The outputs can be difficult to justify and explain. Use this as a supplementary tool, not the sole basis for evaluation.")
     
     score = sum([
         result.accuracy.has_sources,
@@ -692,6 +702,8 @@ elif page == "Purpose":
     
     st.markdown("---")
     st.subheader("What AI Agent Analysis Shows")
+    
+    st.warning("⚠️ **Note:** AI analysis has inherent biases and limitations. The outputs can be difficult to justify and explain. Use this as a supplementary tool, not the sole basis for evaluation.")
     
     if result.purpose.justifications:
         st.subheader("📝 Justification")
