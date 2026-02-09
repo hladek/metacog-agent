@@ -295,14 +295,13 @@ elif page == "Currency":
     
     # Currency assessment
     if result.currency.requires_current_info and not result.currency.is_maintained:
-        st.warning("⚠️ This topic requires current information, but the blog doesn't appear to be regularly maintained.")
+        st.markdown("⚠️ This topic requires current information, but the blog doesn't appear to be regularly maintained.")
     elif result.currency.is_maintained and result.currency.has_recent_references:
-        st.success("✅ The blog appears to be well-maintained with recent references.")
+        st.markdown("✅ The blog appears to be well-maintained with recent references.")
     else:
-        st.info("ℹ️ Consider the publication date when evaluating this content.")
+        st.markdown("ℹ️ Consider the publication date when evaluating this content.")
 
     # Publication Date & Timeliness
-    st.subheader("📅 Publication Date & Timeliness")
     pub_date = result.metadata.publishing_date or "Not specified"
     
     if pub_date != "Not specified":
@@ -336,15 +335,12 @@ elif page == "Currency":
     else:
         st.markdown("**Not specified**")
     if result.currency.justifications:
-        st.markdown("---")
         examples_list = result.currency.justifications
         if examples_list:
             for example in examples_list:
                 st.markdown(f"- {example}")
     
     if result.currency.examples:
-        st.markdown("---")
-        st.subheader("📝 Examples")
         examples_list = result.currency.examples
         if examples_list:
             for example in examples_list:

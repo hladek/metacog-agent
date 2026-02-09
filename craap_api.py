@@ -119,6 +119,7 @@ class CRAAPAnalysisResult:
     """Complete CRAAP analysis result for a blog post."""
     
     url: str
+    blog_text: str
     metadata: BlogMetadata
     currency: CurrencyInfo
     accuracy: AccuracyInfo
@@ -237,7 +238,7 @@ Your task:
 2. Assess if the blog appears to be actively maintained
 3. Identify all dates mentioned: publication date, last update, and reference dates
 4. Evaluate if references and sources are recent
-5. Provide examples from text and justifications  that support your decision.
+5. Provide examples from text with specific citations and justifications that support your decision. Always include direct references or quotes from the text when possible.
 
 Look for:
 - Explicit publication/update timestamps
@@ -247,6 +248,7 @@ Look for:
 - Recency of external sources mentioned
 
 Provide clear boolean values and specific date strings when available (use "Not found" if absent).
+Always reference specific examples or citations from the text to support your assessments.
 
 Content to analyze:
 {text[:2000] if text else "No content available"}
@@ -276,23 +278,24 @@ async def analyze_accuracy(text: str) -> AccuracyInfo:
 Evaluate the accuracy and credibility of this blog content.
 
 Your task:
-1. Identify if sources, citations, data, or evidence are provided
-2. Detect obvious errors, contradictions, or inconsistencies in the writing
-3. Assess how the author distinguishes facts from opinions
+1. Identify if sources, citations, data, or evidence are provided - always include specific references or quotes when found
+2. Detect obvious errors, contradictions, or inconsistencies in the writing - reference specific examples
+3. Assess how the author distinguishes facts from opinions - cite specific instances
 4. Determine if claims can be verified through external trustworthy sources
-5. Provide a list of three claim that can be verified from external sources. Pick non-trivial facts that can serve as evidence of author's truthfulness.
-6. Provide an URL to Google search for each fact that could verify the truthfullness of the fact. 
+5. Provide a list of three claims that can be verified from external sources. Pick non-trivial facts that can serve as evidence of author's truthfulness. Always quote or reference the exact claims from the text.
+6. Provide a URL to Google search for each fact that could verify the truthfulness of the fact. 
 
 Look for:
-- Academic or journalistic citations (footnotes, references, links)
+- Academic or journalistic citations (footnotes, references, links) - always note specific citations found
 - Links to credible external sources (research papers, official sites, reputable publications)
-- Data with clear provenance
-- Use of hedging language ("studies suggest", "research shows")
-- Clear labeling of opinions vs facts
+- Data with clear provenance - reference where it appears in the text
+- Use of hedging language ("studies suggest", "research shows") - cite examples
+- Clear labeling of opinions vs facts - provide specific examples
 - Logical consistency throughout the text
-- Factual errors or misleading statements
+- Factual errors or misleading statements - quote specific instances
 
 Provide clear boolean assessments and descriptive analysis for facts vs opinions.
+Always include direct references, quotes, or citations from the text to support your analysis.
 
 Content to analyze:
 {text[:2000] if text else "No content available"}
@@ -322,20 +325,20 @@ async def analyze_purpose(text: str) -> IntentInfo:
 Analyze the intent, tone, and potential bias of this blog content.
 
 Your task:
-1. Tone: Determine if the writing is objective, opinion-driven, emotional, or promotional
-2. Style: Identify the writing style (journalistic, academic, conversational, marketing, etc.)
-3. Bias: Assess bias toward or against social, political, or ideological groups
-4. Sentiment: Classify overall sentiment (positive, negative, neutral, mixed)
-5. Hate speech: Identify any vulgar, hateful, discriminatory, or offensive language
+1. Tone: Determine if the writing is objective, opinion-driven, emotional, or promotional - cite specific examples from the text
+2. Style: Identify the writing style (journalistic, academic, conversational, marketing, etc.) - reference specific passages
+3. Bias: Assess bias toward or against social, political, or ideological groups - quote specific instances
+4. Sentiment: Classify overall sentiment (positive, negative, neutral, mixed) - provide specific examples
+5. Hate speech: Identify any vulgar, hateful, discriminatory, or offensive language - always quote exact phrases if found
 
 Author intent to evaluate:
-- Is the primary purpose to inform, persuade, entertain, or sell?
-- Are there disclosure statements for sponsorships, affiliates, or conflicts of interest?
-- Are ads, affiliate links, or sponsored content present?
-- Is the language inflammatory or deliberately polarizing?
+- Is the primary purpose to inform, persuade, entertain, or sell? - reference specific indicators
+- Are there disclosure statements for sponsorships, affiliates, or conflicts of interest? - cite if found
+- Are ads, affiliate links, or sponsored content present? - note specific mentions
+- Is the language inflammatory or deliberately polarizing? - quote examples if present
 
 Provide descriptive assessments. Use "None detected" or "Not present" rather than "Unknown" when elements are absent.
-Provide also justification of your decision with examples.
+Always provide justification of your decision with specific examples and quotes from the text.
 
 Content to analyze:
 {text[:2000] if text else "No content available"}
@@ -459,36 +462,36 @@ Conduct an objective, evidence-based investigation of the individual's public re
 ## Analysis Framework
 
 ### Professional Reputation
-- Credentials, certifications, educational background
-- Career achievements and positions held
-- Professional associations and industry recognition
-- Publications, patents, or significant contributions
+- Credentials, certifications, educational background - always cite specific sources
+- Career achievements and positions held - reference where this information was found
+- Professional associations and industry recognition - include specific sources
+- Publications, patents, or significant contributions - provide specific references
 
 ### Public Sentiment
-- Tone and nature of media coverage (positive/neutral/negative)
-- Volume and recency of mentions
-- Context and credibility of sources
+- Tone and nature of media coverage (positive/neutral/negative) - cite specific articles or sources
+- Volume and recency of mentions - reference specific sources and dates
+- Context and credibility of sources - always identify and link to sources
 
 ### Controversies & Concerns
-- Legal disputes, regulatory actions, or ethical concerns
-- Involvement in scandals or misinformation
-- Professional misconduct or disciplinary actions
-- Patterns of criticism from credible sources
+- Legal disputes, regulatory actions, or ethical concerns - cite specific sources and documents
+- Involvement in scandals or misinformation - reference specific reports and dates
+- Professional misconduct or disciplinary actions - provide source references
+- Patterns of criticism from credible sources - cite specific sources
 
 ### Positive Contributions
-- Awards, honors, and recognitions
-- Philanthropic activities and community service
-- Innovation, thought leadership, or industry impact
-- Mentorship and professional development contributions
+- Awards, honors, and recognitions - cite specific sources and dates
+- Philanthropic activities and community service - reference where this was documented
+- Innovation, thought leadership, or industry impact - provide specific examples with sources
+- Mentorship and professional development contributions - cite references if available
 
 ## Output Requirements
-- **Public Sentiment**: Overall sentiment classification with evidence
-- **Positive Mentions**: Key achievements and favorable coverage with sources
-- **Negative Mentions**: Controversies or concerns with context and sources
-- **Sources**: List of primary sources consulted with credibility assessment
-- **Search URL** Url to google Search with appropriate query
-- ** Justification ** Justification of the decision
-- **Summary**: Balanced 2-3 paragraph synthesis weighing source credibility, recency, and frequency of mentions
+- **Public Sentiment**: Overall sentiment classification with specific evidence and source references
+- **Positive Mentions**: Key achievements and favorable coverage with specific sources and URLs when available
+- **Negative Mentions**: Controversies or concerns with context, specific sources, and references
+- **Sources**: List of primary sources consulted with credibility assessment - always include specific URLs or citations
+- **Search URL**: URL to Google Search with appropriate query
+- **Justification**: Justification of the decision with specific references to sources consulted
+- **Summary**: Balanced 2-3 paragraph synthesis weighing source credibility, recency, and frequency of mentions - always reference specific sources
 """
     
     authority_search_agent = Agent(
@@ -527,58 +530,58 @@ Name or domain of a publisher (e.g., "The Guardian", "breitbart.com", "CNN", "ex
 Conduct comprehensive research to evaluate the publisher's credibility, transparency, factual reliability, and editorial standards using evidence from authoritative media watchdog organizations and academic sources.
 
 ## Research Sources (Priority Order)
-1. **Media Credibility Databases**: Media Bias/Fact Check, Ad Fontes Media, NewsGuard, AllSides, Pew Research
-2. **Fact-Checking Organizations**: PolitiFact, Snopes, FactCheck.org, Poynter Institute, International Fact-Checking Network
-3. **Academic Resources**: Wikipedia media entries, scholarly articles on media analysis, journalism reviews
-4. **Journalism Watchdogs**: Committee to Protect Journalists, Reporters Without Borders, Columbia Journalism Review
-5. **Publisher Transparency**: About page, Editorial Policy, Corrections/Retractions page, Ownership disclosure
+1. **Media Credibility Databases**: Media Bias/Fact Check, Ad Fontes Media, NewsGuard, AllSides, Pew Research - always cite specific sources
+2. **Fact-Checking Organizations**: PolitiFact, Snopes, FactCheck.org, Poynter Institute, International Fact-Checking Network - include specific references
+3. **Academic Resources**: Wikipedia media entries, scholarly articles on media analysis, journalism reviews - provide citations
+4. **Journalism Watchdogs**: Committee to Protect Journalists, Reporters Without Borders, Columbia Journalism Review - cite specific reports
+5. **Publisher Transparency**: About page, Editorial Policy, Corrections/Retractions page, Ownership disclosure - reference specific pages/URLs
 
 ## Evaluation Framework
 
 ### Ownership and Funding
-- Parent company or owner identification
-- Major investors or funding sources
-- Financial transparency and disclosure practices
-- Potential conflicts of interest
-- Independence vs. corporate/political affiliations
+- Parent company or owner identification - cite specific sources
+- Major investors or funding sources - reference where this information was found
+- Financial transparency and disclosure practices - cite specific sources
+- Potential conflicts of interest - provide specific references
+- Independence vs. corporate/political affiliations - cite sources
 
 ### Editorial Standards
-- Existence and accessibility of editorial policies
-- Fact-checking procedures and verification processes
-- Corrections policy and transparency about errors
-- Distinction between news and opinion content
-- Journalistic code of ethics adherence
-- Use of anonymous sources policy
+- Existence and accessibility of editorial policies - reference specific URLs or sources
+- Fact-checking procedures and verification processes - cite sources documenting these
+- Corrections policy and transparency about errors - reference specific examples
+- Distinction between news and opinion content - cite specific assessments
+- Journalistic code of ethics adherence - reference specific sources
+- Use of anonymous sources policy - cite where documented
 
 ### Political Bias and Ideological Leaning
-- Overall political orientation (left, center, right, or mixed)
-- Degree of bias (minimal, moderate, strong)
-- Balance in coverage and representation of viewpoints
-- Tendency toward sensationalism or clickbait
-- Use of loaded or inflammatory language
+- Overall political orientation (left, center, right, or mixed) - cite specific assessments (e.g., Media Bias/Fact Check, AllSides)
+- Degree of bias (minimal, moderate, strong) - reference specific sources
+- Balance in coverage and representation of viewpoints - cite specific analyses
+- Tendency toward sensationalism or clickbait - reference specific assessments
+- Use of loaded or inflammatory language - cite specific examples or sources
 
 ### Factual Reliability
-- Track record of accuracy and truthfulness
-- Frequency of corrections or retractions
-- History of misinformation or false claims
-- Source credibility and citation practices
-- Verification standards for breaking news
+- Track record of accuracy and truthfulness - cite specific fact-checking reports
+- Frequency of corrections or retractions - reference specific sources or examples
+- History of misinformation or false claims - cite specific fact-checking reports
+- Source credibility and citation practices - reference specific assessments
+- Verification standards for breaking news - cite sources documenting standards
 
 ### Public and Expert Perception
-- Reputation among journalists and media professionals
-- Academic citations and scholarly assessment
-- Industry awards and recognitions (Pulitzer, Peabody, etc.)
-- Reader trust and audience perception
-- Controversies or credibility challenges
+- Reputation among journalists and media professionals - cite specific sources
+- Academic citations and scholarly assessment - provide specific references
+- Industry awards and recognitions (Pulitzer, Peabody, etc.) - cite specific awards with sources
+- Reader trust and audience perception - reference specific surveys or studies
+- Controversies or credibility challenges - cite specific sources and reports
 
 ## Output Requirements
-- **Ownership and Funding**: Clear description of ownership structure, funding sources, and transparency level
-- **Editorial Standards**: Assessment of journalistic practices, fact-checking, and correction policies with specific examples
-- **Political Bias**: Classification of political leaning with evidence and degree of bias
-- **Factual Reliability**: Evaluation of accuracy track record with documented examples of fact-checking assessments
-- **Public Perception**: Summary of reputation among experts, awards, and any significant controversies
-- ** Search URL ** URL to Google search with proper query to search for the publisher.
-- **Summary**: Balanced 2-3 paragraph overall assessment with credibility rating (High/Medium/Low) and key considerations for readers
+- **Ownership and Funding**: Clear description of ownership structure, funding sources, and transparency level - always cite specific sources
+- **Editorial Standards**: Assessment of journalistic practices, fact-checking, and correction policies with specific examples and source references
+- **Political Bias**: Classification of political leaning with evidence and degree of bias - cite specific assessments and sources
+- **Factual Reliability**: Evaluation of accuracy track record with documented examples of fact-checking assessments - always include specific references
+- **Public Perception**: Summary of reputation among experts, awards, and any significant controversies - cite specific sources and references
+- **Search URL**: URL to Google search with proper query to search for the publisher
+- **Summary**: Balanced 2-3 paragraph overall assessment with credibility rating (High/Medium/Low) and key considerations for readers - always reference specific sources used in the analysis
 """
     
     authority_search_agent = Agent(
@@ -655,6 +658,7 @@ async def analyze_blog(
     
     result = CRAAPAnalysisResult(
         url=url,
+        blog_text=blog_text,
         metadata=metadata,
         currency=currency_info,
         accuracy=accuracy_info,
@@ -866,6 +870,7 @@ def load_analysis_from_json(filepath: str) -> CRAAPAnalysisResult:
     
     return CRAAPAnalysisResult(
         url=data['url'],
+        blog_text=data.get('blog_text', ''),
         metadata=metadata,
         currency=currency,
         accuracy=accuracy,
