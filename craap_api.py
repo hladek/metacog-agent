@@ -35,16 +35,6 @@ OUTPUT_DIR = os.environ.get("CRAAP_OUTPUT_DIR", "craap_results")
 # Data Models
 # ============================================================================
 
-class AccuracyInfo(BaseModel):
-    """Information about the accuracy and credibility of blog content."""
-    
-    has_sources: bool = Field(description="Whether the blog provides sources, citations, or evidence")
-    verifiable: bool = Field(description="Whether the content can be verified through other sources")
-    error_free: bool = Field(description="Whether the writing is free of obvious errors")
-    facts_vs_opinions: str = Field(description="Analysis of how facts and opinions are distinguished")
-    verifiable_facts: list[str] = Field(description="list of facts that can be verified")
-    search_urls: list[str] = Field(description="URL to google search with a query to verify each fact. ")
-
 
 class FactsResult(BaseModel):
     """Verifiable facts extracted from blog content with search URLs."""
@@ -66,17 +56,6 @@ class VerifiedFactsResult(BaseModel):
 
     facts: list[VerifiedFact] = Field(description="Facts with their verification verdicts")
 
-
-class CurrencyInfo(BaseModel):
-    """Information about the currency and timeliness of blog content."""
-    
-    requires_current_info: bool = Field(description="Whether the topic requires up-to-date information")
-    is_maintained: bool = Field(description="Whether the blog shows signs of being maintained")
-    published_date: str = Field(description="When the blog post was published")
-    last_updated: str = Field(description="When the blog post was last updated")
-    has_recent_references: bool = Field(description="Whether the blog has recent references")
-    examples: list[str] = Field(description="Notable citations that support the decision")
-    justifications: list[str] = Field(description="Citations that support the decision with justifications.")
 
 
 class IntentInfo(BaseModel):
@@ -102,14 +81,6 @@ class BlogMetadata(BaseModel):
     publishing_date: str = Field(description="Date of publication")
     summary: str = Field(description="Short summary of the blog content")
 
-
-class PersonBio(BaseModel):
-    """Biographical information about a person."""
-    
-    full_name: str
-    past_affiliations: List[str]
-    current_affiliation: str
-    biography: str
 
 
 class AuthorityVerdict(BaseModel):
@@ -315,52 +286,6 @@ Respond in this exact Markdown format:
     result = await Runner.run(currency_html_agent, prompt)
     return result.final_output
 
-
-async def analyze_accuracy(text: str) -> AccuracyInfo:
-    """
-    Analyze the factual accuracy and reliability of blog content.
-    
-    Args:
-        text: Extracted text from the blog
-    
-    Returns:
-        AccuracyInfo with accuracy analysis
-    """
-    prompt = f"""
-Evaluate the accuracy and credibility of this blog content.
-
-Your task:
-1. Identify if sources, citations, data, or evidence are provided - always include specific references or quotes when found
-2. Detect obvious errors, contradictions, or inconsistencies in the writing - reference specific examples
-3. Assess how the author distinguishes facts from opinions - cite specific instances
-4. Determine if claims can be verified through external trustworthy sources
-5. Provide a list of three claims that can be verified from external sources. Pick non-trivial facts that can serve as evidence of author's truthfulness. Always quote or reference the exact claims from the text.
-6. Provide a URL to Google search for each fact that could verify the truthfulness of the fact. 
-
-Look for:
-- Academic or journalistic citations (footnotes, references, links) - always note specific citations found
-- Links to credible external sources (research papers, official sites, reputable publications)
-- Data with clear provenance - reference where it appears in the text
-- Use of hedging language ("studies suggest", "research shows") - cite examples
-- Clear labeling of opinions vs facts - provide specific examples
-- Logical consistency throughout the text
-- Factual errors or misleading statements - quote specific instances
-
-Provide clear boolean assessments and descriptive analysis for facts vs opinions.
-Always include direct references, quotes, or citations from the text to support your analysis.
-
-Content to analyze:
-{text[:2000] if text else "No content available"}
-"""
-    
-    extraction_agent = Agent(
-        name="accuracy_extractor",
-        instructions=prompt,
-        model_settings=ModelSettings(),
-        output_type=AccuracyInfo,
-    )
-    result = await Runner.run(extraction_agent, prompt)
-    return result.final_output
 
 
 async def analyze_accuracy_text(text: str) -> str:
