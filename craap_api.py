@@ -121,7 +121,7 @@ class CRAAPAnalysisResult:
     url: str
     blog_text: str
     metadata: BlogMetadata
-    currency: CurrencyInfo
+    currency: str
     accuracy: AccuracyInfo
     purpose: IntentInfo
     author_authority: Optional[AuthorityVerdict]
@@ -132,7 +132,7 @@ class CRAAPAnalysisResult:
         """Convert result to dictionary format."""
         result = asdict(self)
         result['metadata'] = self.metadata.model_dump()
-        result['currency'] = self.currency.model_dump()
+        result['currency'] = self.currency
         result['accuracy'] = self.accuracy.model_dump()
         result['purpose'] = self.purpose.model_dump()
         result['author_authority'] = self.author_authority.model_dump() if self.author_authority else None
@@ -220,47 +220,76 @@ Content to analyze:
     return result.final_output
 
 
-async def analyze_currency(text: str) -> CurrencyInfo:
+async def analyze_currency_html(text: str) -> str:
     """
-    Analyze the currency and timeliness of blog content.
-    
+    Analyze the currency (timeliness) of a blog post from its raw text.
+
+    Uses an LLM to answer five structured currency questions and returns
+    the result as formatted Markdown:
+      1. Publication / last-update date and timing appropriateness
+      2. Whether the content is current enough for its field
+      3. Whether links and references appear functional (not broken/outdated)
+      4. Whether the content shows signs of active maintenance
+      5. Whether the content is outdated for its stated purpose
+
     Args:
-        text: Extracted text from the blog
-    
+        text: Raw text content of the blog page
+
     Returns:
-        CurrencyInfo with timeliness analysis
+        Markdown-formatted answers to the five currency questions
     """
-    prompt = f"""
-Analyze the currency and timeliness of this blog content.
+    prompt = f"""You are a media-literacy analyst evaluating the CURRENCY (timeliness) of a blog post.
 
-Your task:
-1. Determine if this topic requires up-to-date information (e.g., technology, health, current events, regulations)
-2. Assess if the blog appears to be actively maintained
-3. Identify all dates mentioned: publication date, last update, and reference dates
-4. Evaluate if references and sources are recent
-5. Provide examples from text with specific citations and justifications that support your decision. Always include direct references or quotes from the text when possible.
+Answer each of the five questions below in 1-3 sentences. Be direct and evidence-based.
+Use only information present in the text. If information is missing, say so briefly.
 
-Look for:
-- Explicit publication/update timestamps
-- Date stamps in the content
-- Dates in citations or references
-- Signs of ongoing maintenance (e.g., "Updated on...")
-- Recency of external sources mentioned
+---
+1. PUBLICATION / UPDATE DATE
+   When was it published or last updated? Are those dates visible and clear?
+   Is the timing appropriate for the topic?
 
-Provide clear boolean values and specific date strings when available (use "Not found" if absent).
-Always reference specific examples or citations from the text to support your assessments.
+2. CURRENCY FOR THE FIELD
+   Does the topic change quickly (technology, medicine, news, law)?
+   Is the content recent enough for that field?
 
-Content to analyze:
-{text[:2000] if text else "No content available"}
+3. LINKS AND REFERENCES
+   Do referenced sources, studies, or links appear current and functional?
+   Any signs of broken or outdated references?
+
+4. MAINTENANCE
+   Are there signs the content is actively maintained (update notices,
+   revision history, corrections, recent comments)?
+
+5. OBSOLESCENCE RISK
+   Even if recently published, does it rely on old standards, deprecated
+   technologies, superseded research, or outdated terminology?
+---
+
+Blog text (truncated):
+{text[:3000] if text else "No content available."}
+
+Respond in this exact Markdown format:
+## Currency Analysis
+
+**1. Publication/Update Date**
+<answer>
+
+**2. Currency for the Field**
+<answer>
+
+**3. Maintenance**
+<answer>
+
+**4. Obsolescence Risk**
+<answer>
 """
-    
-    extraction_agent = Agent(
-        name="currency_extractor",
+
+    currency_html_agent = Agent(
+        name="currency_html_analyzer",
         instructions=prompt,
         model_settings=ModelSettings(),
-        output_type=CurrencyInfo,
     )
-    result = await Runner.run(extraction_agent, prompt)
+    result = await Runner.run(currency_html_agent, prompt)
     return result.final_output
 
 
@@ -636,7 +665,7 @@ async def analyze_blog(
     )
     
     # Run CRAAP analyses in parallel
-    currency_task = analyze_currency(blog_text)
+    currency_task = analyze_currency_html(blog_text)
     accuracy_task = analyze_accuracy(blog_text)
     purpose_task = analyze_purpose(blog_text)
     
@@ -744,11 +773,7 @@ def print_analysis_report(result: CRAAPAnalysisResult) -> None:
     print(f"  Summary: {result.metadata.summary}")
     
     print("\n📅 CURRENCY (Timeliness)")
-    print(f"  Requires Current Info: {result.currency.requires_current_info}")
-    print(f"  Is Maintained: {result.currency.is_maintained}")
-    print(f"  Published Date: {result.currency.published_date}")
-    print(f"  Last Updated: {result.currency.last_updated}")
-    print(f"  Recent References: {result.currency.has_recent_references}")
+    print(result.currency)
     
     print("\n✓ ACCURACY (Reliability)")
     print(f"  Has Sources: {result.accuracy.has_sources}")
@@ -856,7 +881,7 @@ def load_analysis_from_json(filepath: str) -> CRAAPAnalysisResult:
     
     # Reconstruct the Pydantic models from dictionaries
     metadata = BlogMetadata(**data['metadata'])
-    currency = CurrencyInfo(**data['currency'])
+    currency = data['currency']
     accuracy = AccuracyInfo(**data['accuracy'])
     purpose = IntentInfo(**data['purpose'])
     

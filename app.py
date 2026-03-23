@@ -275,24 +275,16 @@ Ask yourself:
     
     st.warning("⚠️ **Note:** AI analysis has inherent biases and limitations. The outputs can be difficult to justify and explain. Use this as a supplementary tool, not the sole basis for evaluation.")
     
-    # Currency assessment
-    if result.currency.requires_current_info and not result.currency.is_maintained:
-        st.markdown("⚠️ This topic requires current information, but the blog doesn't appear to be regularly maintained.")
-    elif result.currency.is_maintained and result.currency.has_recent_references:
-        st.markdown("✅ The blog appears to be well-maintained with recent references.")
-    else:
-        st.markdown("ℹ️ Consider the publication date when evaluating this content.")
-
     # Publication Date & Timeliness
     pub_date = result.metadata.publishing_date or "Not specified"
-    
+
     if pub_date != "Not specified":
         try:
             date_match = re.search(r'\d{4}-\d{2}-\d{2}', pub_date)
             if date_match:
                 parsed_date = datetime.strptime(date_match.group(), '%Y-%m-%d')
                 days_ago = (datetime.now() - parsed_date).days
-                
+
                 if days_ago == 0:
                     time_ago = "Published today"
                 elif days_ago == 1:
@@ -308,7 +300,7 @@ Ask yourself:
                 else:
                     years = days_ago // 365
                     time_ago = f"Published {years} year{'s' if years > 1 else ''} ago"
-                
+
                 st.markdown(f"**{pub_date[:10]}** — {time_ago}")
             else:
                 st.markdown(f"**{pub_date}**")
@@ -316,17 +308,8 @@ Ask yourself:
             st.markdown(f"**{pub_date}**")
     else:
         st.markdown("**Not specified**")
-    if result.currency.justifications:
-        examples_list = result.currency.justifications
-        if examples_list:
-            for example in examples_list:
-                st.markdown(f"- {example}")
-    
-    if result.currency.examples:
-        examples_list = result.currency.examples
-        if examples_list:
-            for example in examples_list:
-                st.markdown(f"- {example}")
+
+    st.markdown(result.currency)
 
     
     
@@ -685,15 +668,6 @@ Ask yourself:
     
     st.warning("⚠️ **Note:** AI analysis has inherent biases and limitations. The outputs can be difficult to justify and explain. Use this as a supplementary tool, not the sole basis for evaluation.")
     
-    if result.purpose.justifications:
-        st.subheader("📝 Justification")
-        justification_list = result.purpose.justifications
-        if justification_list:
-            for item in justification_list:
-                st.markdown(f"- {item}")
-        else:
-            st.markdown(result.purpose.justifications)
-        st.markdown("---")
     
     st.subheader("✍️ Writing Style")
     st.markdown(f"**Tone:** {result.purpose.tone}")
@@ -705,3 +679,12 @@ Ask yourself:
     st.markdown(f"**Hate Speech Analysis:** {result.purpose.hate}")
     
     
+    if result.purpose.justifications:
+        st.subheader("📝 Justification")
+        justification_list = result.purpose.justifications
+        if justification_list:
+            for item in justification_list:
+                st.markdown(f"- {item}")
+        else:
+            st.markdown(result.purpose.justifications)
+        st.markdown("---")
