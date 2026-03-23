@@ -243,52 +243,34 @@ elif page == "Currency":
     st.title("📅 Currency - Timeliness & Metadata")
     result = st.session_state.analysis_result
     
-    st.markdown("""
-    Currency examines the timeliness of information and key metadata about the source.
-    Understanding when and by whom content was published is crucial for evaluating credibility.
-    """)
-    
     # Quick tutorial
-    st.markdown("### 💡 How to Evaluate Currency")
     st.markdown("""
-    
-    1. **When was the information published or last updated?**
-       - Look for publication and update dates on the page
-       - Is there a clear timestamp visible on the content?
-       - If the topic requires current information, is the content recent enough?
-    
-    2. **Is the information current enough for your topic?**
-       - For rapidly changing fields (technology, medicine, current events), recent content is critical
-       - For historical or stable topics, older content may still be valuable
-       - Consider: Does this topic require the latest information?
-    
-    3. **Are the links and references still working?**
-       - Broken links may indicate outdated or unmaintained content
-       - Check if cited sources are still accessible
-       - Dead links suggest the information may be stale
-    
-    4. **Has the information been revised or updated?**
-       - Does the author maintain and update the content?
-       - Are there update notes or revision histories?
-       - Is there evidence of ongoing maintenance?
-    
-    5. **Is the information outdated for your purpose?**
-       - Even if published recently, is the content itself outdated?
-       - Does it reference old standards, deprecated technologies, or superseded research?
-       - Compare with other current sources on the same topic
+Currency evaluates how up-to-date and timely a source is. Knowing when information was published, updated, and by whom helps determine its relevance and credibility.
+
+Ask yourself:
+
+* **When was it published or updated?**
+  Check for clear dates on the page. Is the timing appropriate for your topic?
+
+* **Is it current enough?**
+  Fast-changing fields (e.g., tech, medicine, news) require recent sources, while stable topics may not.
+
+* **Do links and references work?**
+  Broken or outdated links can signal neglected or unreliable content.
+
+* **Has it been maintained?**
+  Look for updates, revisions, or signs the content is actively managed.
+
+* **Is it outdated for your purpose?**
+  Even recent content can be obsolete—watch for old standards, technologies, or research.
     """)
     
     st.markdown("---")
 
-    st.subheader("Do it yourself")
-    
-    st.info("💡 **Important:** When verifying information, use reputable sources such as:\n- Government websites (.gov)\n- Established news agencies (AP, Reuters, BBC, etc.)\n- Wikipedia for general information\n- Peer-reviewed research papers (Google Scholar, PubMed)\n- Fact-checking sites (Snopes, FactCheck.org)\n- Use trusted search engines and cross-reference multiple sources.")
-
-    st.markdown("Search for the following parts in the text. Use the context to asses the currency of the text")
-
-    
-    
-
+    # TODO
+    #st.subheader("Do it yourself")
+    #st.markdown("Search for the following parts in the text. Use the context to asses the currency of the text")
+     
     st.subheader("What AI Agent Analysis Shows")
     
     st.warning("⚠️ **Note:** AI analysis has inherent biases and limitations. The outputs can be difficult to justify and explain. Use this as a supplementary tool, not the sole basis for evaluation.")
@@ -354,36 +336,26 @@ elif page == "Currency":
 # Relevance page
 elif page == "Relevance":
     st.title("🎯 Relevance - Content Usefulness")
-    result = st.session_state.analysis_result
     
     st.markdown("""
+   
     Relevance assesses how useful and appropriate the content is for your needs.
-    """)
-    
-    # Quick tutorial
-    st.markdown("### 💡 How to Evaluate Relevance")
-    st.markdown("""
-    
-    1. **Does it relate to your topic?**
-       - Is the content directly relevant to your research question or information need?
-       - Does it cover the specific aspects you're investigating?
-    
-    2. **Who is the intended audience?**
-       - Is it written for experts, students, or general public?
-       - Does the level of complexity match your needs?
-    
-    3. **Is it at the right level?**
-       - Too basic: Oversimplified or lacks depth?
-       - Too advanced: Technical jargon you don't understand?
-       - Just right: Matches your knowledge level and purpose
-    
-    4. **Have you looked at other sources?**
-       - Did you compare multiple sources before choosing this one?
-       - Is this the best available source for your needs?
-    
-    5. **Would you cite this in your work?**
-       - Is the information substantial enough to support your argument?
-       - Does it add value to your research or project?
+    Look at the text and try to answer the following questions. Ask yourself:
+
+* **Does it relate to your topic?**
+  Is the content directly connected to your research question or specific focus?
+
+* **Who is the audience?**
+  Is it aimed at experts, students, or the general public? Does that match your needs?
+
+* **Is it the right level?**
+  Too basic, too advanced, or appropriately detailed for your purpose?
+
+* **Have you compared sources?**
+  Is this the most suitable and useful source available?
+
+* **Would you cite it?**
+  Does it provide meaningful, relevant information that supports your work?
     """)
     
     st.markdown("---")
@@ -404,6 +376,7 @@ elif page == "Relevance":
     st.markdown("---")
     st.subheader("📝 Your Answers")
     
+    result = st.session_state.analysis_result
     user_answers = st.text_area(
         "Write your answers to the questions above:",
         placeholder="Example:\n- I'm searching for this information to learn about...\n- I need information that...\n- I want to find...",
@@ -434,38 +407,26 @@ elif page == "Authority":
     st.title("👤 Authority - Source Credibility")
     result = st.session_state.analysis_result
     
+    # Quick tutorial
     st.markdown("""
     Authority evaluates the credibility and expertise of the author and publisher.
-    """)
-    
-    # Quick tutorial
-    st.markdown("### 💡 How to Evaluate Authority")
-    st.markdown("""
-    
-    1. **Who is the author?**
-       - Is the author clearly identified?
-       - What are their credentials, qualifications, or expertise?
-       - Can you find information about them elsewhere?
-    
-    2. **What are their credentials?**
-       - Do they have relevant education or professional experience?
-       - Are they affiliated with a reputable institution or organization?
-       - Have they published other work on this topic?
-    
-    3. **Who is the publisher or sponsor?**
-       - What organization published or hosts this content?
-       - Is the publisher reputable in this field?
-       - What is their mission and purpose?
-    
-    4. **What is the domain/URL?**
-       - .edu (educational), .gov (government), .org (organization), .com (commercial)
-       - Does the domain match what you'd expect for this content?
-       - Is it a well-known, established site?
-    
-    5. **Can you verify their expertise?**
-       - Search for the author's name online
-       - Check for reviews, citations, or professional profiles
-       - Look for bias, conflicts of interest, or controversial reputation
+Ask yourself following questions about the text:
+
+* **Who is the author?**
+  Are they clearly identified? What are their qualifications or expertise?
+
+* **What are their credentials?**
+  Do they have relevant education, experience, or publications? Are they affiliated with a reputable institution?
+
+* **Who is the publisher?**
+  Is the organization trustworthy and recognized in the field?
+
+* **What is the domain?**
+  Does the URL (.edu, .gov, .org, .com) align with the type of content and source?
+
+* **Can you verify their expertise?**
+  Find other work, profiles, or citations. Watch for bias or conflicts of interest.
+
     """)
     
     st.markdown("---")
@@ -473,7 +434,6 @@ elif page == "Authority":
 
     st.subheader("Do it yourself")
     
-    st.info("💡 **Important:** When verifying information, use reputable sources such as:\n- Government websites (.gov)\n- Established news agencies (AP, Reuters, BBC, etc.)\n- Wikipedia for general information\n- Peer-reviewed research papers (Google Scholar, PubMed)\n- Fact-checking sites (Snopes, FactCheck.org)\n- Use trusted search engines and cross-reference multiple sources.")
     
     if result.author_authority:
         st.markdown("Search the internet for information about the author.")
@@ -486,8 +446,13 @@ elif page == "Authority":
             st.markdown("You can use the following link as a starting point.")
             st.markdown(f"🔍 **[Search for publisher]({result.publisher_authority.search_url})**")
 
+    st.info("When verifying information, use reputable sources such as:\n- Government websites (.gov)\n- Established news agencies (AP, Reuters, BBC, etc.)\n- Wikipedia for general information\n- Peer-reviewed research papers (Google Scholar, PubMed)\n- Fact-checking sites (Snopes, FactCheck.org)\n- Use trusted search engines and cross-reference multiple sources.")
+
     st.subheader("What AI Agent Analysis Shows")
     
+    st.markdown("""
+    Read the analysis consturcted automatically by an intelligent agent. Compare it with your conclustions.
+    """)
     st.warning("⚠️ **Note:** AI analysis has inherent biases and limitations. The outputs can be difficult to justify and explain. Use this as a supplementary tool, not the sole basis for evaluation.")
     
     # Author Authority
@@ -562,14 +527,11 @@ elif page == "Accuracy":
     st.title("✓ Accuracy - Reliability & Correctness")
     result = st.session_state.analysis_result
     
-    st.markdown("""
-    Accuracy assesses the reliability, correctness, and verifiability of the content.
-    """)
-    
     # Quick tutorial
-    st.markdown("### 💡 How to Evaluate Accuracy")
     st.markdown("""
     
+    Accuracy assesses the reliability, correctness, and verifiability of the content. Find answers to the following questions:
+
     1. **Where does the information come from?**
        - Are sources clearly cited and documented?
        - Can you verify the information in other sources?
@@ -669,46 +631,30 @@ elif page == "Purpose":
     
     st.markdown("""
     Purpose examines why the content exists and identifies potential biases or agendas.
-    """)
-    
-    # Quick tutorial
-    st.markdown("### 💡 How to Evaluate Purpose")
-    st.markdown("""
-    
-    1. **What is the purpose of the information?**
-       - To inform, teach, or educate?
-       - To persuade, sell, or advocate?
-       - To entertain or express opinions?
-    
-    2. **Do the authors make their intentions clear?**
-       - Is the purpose explicitly stated?
-       - Is it an advertisement, opinion piece, or factual report?
-       - Are there hidden agendas or conflicts of interest?
-    
-    3. **Is the information fact, opinion, or propaganda?**
-       - Are claims presented as facts backed by evidence?
-       - Is the content primarily opinion or commentary?
-       - Does it use emotional language or manipulation?
-    
-    4. **Does the point of view appear objective and impartial?**
-       - Is more than one perspective presented?
-       - Does the author acknowledge limitations or counterarguments?
-       - Is the language neutral or emotionally charged?
-    
-    5. **Are there political, ideological, or commercial biases?**
-       - Who benefits from this information?
-       - Is there advertising or sponsored content?
-       - Does the author or publisher have a known bias?
+Ask yourself:
+
+* **What is the purpose?**
+  Is it to inform, teach, persuade, sell, or entertain?
+
+* **Is the intent clear?**
+  Is it labeled as an ad, opinion, or factual report? Are there hidden agendas?
+
+* **Is it fact, opinion, or propaganda?**
+  Are claims supported by evidence, or driven by opinion or emotion?
+
+* **Is it objective?**
+  Does it present multiple perspectives and use neutral language?
+
+* **Are there biases?**
+  Who benefits? Is there political, ideological, or commercial influence?
+
     """)
     
     st.markdown("---")
     
     st.subheader("Do it yourself")
-    st.markdown("Write down answers to the questions above.")
+    st.markdown("Write down answers to the questions above to this text box. You can have automated feedback to your response.")
     
-    # User answer input section
-    st.markdown("---")
-    st.subheader("📝 Your Answers")
     
     user_purpose_answers = st.text_area(
         "Write your analysis of the blog's purpose:",
