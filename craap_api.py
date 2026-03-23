@@ -46,6 +46,13 @@ class AccuracyInfo(BaseModel):
     search_urls: list[str] = Field(description="URL to google search with a query to verify each fact. ")
 
 
+class FactsResult(BaseModel):
+    """Verifiable facts extracted from blog content with search URLs."""
+
+    verifiable_facts: list[str] = Field(description="List of facts that can be verified externally")
+    search_urls: list[str] = Field(description="Google search URL to verify each corresponding fact")
+
+
 class CurrencyInfo(BaseModel):
     """Information about the currency and timeliness of blog content."""
     
@@ -335,6 +342,179 @@ Content to analyze:
         instructions=prompt,
         model_settings=ModelSettings(),
         output_type=AccuracyInfo,
+    )
+    result = await Runner.run(extraction_agent, prompt)
+    return result.final_output
+
+
+async def analyze_accuracy_text(text: str) -> str:
+    """
+    Analyze the factual accuracy and reliability of blog content, returning Markdown.
+
+    Uses an LLM to answer four structured accuracy questions and returns
+    the result as formatted Markdown:
+      1. Sources, citations, data, or evidence provided (with specific references)
+      2. Obvious errors, contradictions, or inconsistencies (with specific examples)
+      3. How the author distinguishes facts from opinions (with specific instances)
+      4. Whether claims can be verified through external trustworthy sources
+
+    Args:
+        text: Extracted text from the blog
+
+    Returns:
+        Markdown-formatted accuracy analysis
+    """
+    prompt = f"""You are a media-literacy analyst evaluating the ACCURACY of a blog post.
+
+Answer each of the four questions below in 2-4 sentences. Be direct and evidence-based.
+Use only information present in the text. Quote or reference specific passages whenever possible.
+If information is missing, say so briefly.
+
+---
+1. SOURCES AND EVIDENCE
+   Are sources, citations, data, or evidence provided?
+   Quote or reference specific citations, links, or data points found in the text.
+   If none are present, say so explicitly.
+
+2. ERRORS, CONTRADICTIONS, AND INCONSISTENCIES
+   Are there obvious factual errors, contradictions, or logical inconsistencies?
+   Reference specific examples from the text. If none are detected, say so explicitly.
+
+3. FACTS VS. OPINIONS
+   How does the author distinguish facts from opinions?
+   Cite specific instances where opinion language (e.g. "I believe", "in my view") or
+   hedging language (e.g. "studies suggest") is used — or where facts and opinions are mixed
+   without clear separation.
+
+4. VERIFIABILITY
+   Can the main claims be verified through external trustworthy sources
+   (e.g. peer-reviewed research, official statistics, reputable journalism)?
+   Identify the key claims and assess how checkable they are.
+---
+
+Blog text (truncated):
+{text[:3000] if text else "No content available."}
+
+Respond in this exact Markdown format:
+## Accuracy Analysis
+
+**1. Sources and Evidence**
+<answer>
+
+**2. Errors, Contradictions, and Inconsistencies**
+<answer>
+
+**3. Facts vs. Opinions**
+<answer>
+
+**4. Verifiability**
+<answer>
+"""
+
+    accuracy_text_agent = Agent(
+        name="accuracy_text_analyzer",
+        instructions=prompt,
+        model_settings=ModelSettings(),
+    )
+    result = await Runner.run(accuracy_text_agent, prompt)
+    return result.final_output
+
+
+async def verify_fact(claim: str) -> str:
+    """
+    Verify the factual accuracy of a single claim using web search.
+
+    Searches the web for evidence supporting or contradicting the claim and
+    returns a short Markdown verdict with justification and source references.
+    If a definitive verdict cannot be reached, the response says so explicitly.
+
+    Args:
+        claim: The specific claim or statement to verify
+
+    Returns:
+        Markdown-formatted fact-check result with verdict, justification, and references
+    """
+    instructions = """You are a rigorous fact-checker. Your job is to verify a single claim
+using web search, then write a concise, honest verdict.
+
+Steps:
+1. Search the web for evidence directly related to the claim. Use multiple searches if needed.
+2. Evaluate the quality and consistency of sources found.
+3. Reach a verdict based solely on what the evidence supports.
+
+Verdict options:
+- **TRUE** — credible sources clearly confirm the claim
+- **FALSE** — credible sources clearly contradict the claim
+- **PARTIALLY TRUE** — the claim is accurate in some respects but misleading or incomplete in others
+- **UNVERIFIABLE** — insufficient publicly available evidence to decide either way
+- **UNCERTAIN** — sources conflict or evidence is weak; a definitive conclusion cannot be drawn
+
+Rules:
+- Always cite the specific sources you found (title + URL when available).
+- Quote or paraphrase the key evidence that drove your verdict.
+- If you could not find relevant sources, say so explicitly.
+- Do not guess or fill gaps with background knowledge — only use what you found.
+- Keep the full response under 250 words.
+
+Respond in this exact Markdown format:
+
+## Fact Check
+
+**Claim:** <repeat the claim verbatim>
+
+**Verdict:** <TRUE | FALSE | PARTIALLY TRUE | UNVERIFIABLE | UNCERTAIN>
+
+**Justification:**
+<2-4 sentences explaining the verdict, referencing specific evidence found>
+
+**References:**
+<bullet list of sources: title and URL, or "No relevant sources found" if none>
+"""
+
+    fact_check_agent = Agent(
+        name="fact_check_agent",
+        tools=[WebSearchTool()],
+        instructions=instructions,
+        model_settings=ModelSettings(tool_choice="required"),
+    )
+
+    with trace("Fact verification"):
+        result = await Runner.run(fact_check_agent, claim)
+    return result.final_output
+
+
+async def provide_facts(text: str) -> "FactsResult":
+    """
+    Extract verifiable facts and corresponding Google search URLs from blog content.
+
+    Similar to analyze_accuracy but returns only the verifiable facts and
+    search URLs, without the broader accuracy assessment.
+
+    Args:
+        text: Extracted text from the blog
+
+    Returns:
+        FactsResult containing verifiable_facts and search_urls
+    """
+    prompt = f"""
+Extract a list of specific, non-trivial, verifiable facts from this blog content.
+
+For each fact:
+1. Quote or closely paraphrase the exact claim from the text.
+2. Pick claims that serve as evidence of the author's truthfulness — prefer concrete, checkable statements (statistics, named studies, events, attributions).
+3. Provide a Google search URL that would help verify the fact (e.g. https://www.google.com/search?q=...).
+
+Aim for 3–5 facts. Avoid vague or trivially true statements.
+
+Content to analyze:
+{text[:2000] if text else "No content available"}
+"""
+
+    extraction_agent = Agent(
+        name="facts_extractor",
+        instructions=prompt,
+        model_settings=ModelSettings(),
+        output_type=FactsResult,
     )
     result = await Runner.run(extraction_agent, prompt)
     return result.final_output
