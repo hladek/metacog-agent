@@ -10,8 +10,9 @@ This module provides a comprehensive framework for analyzing blogs using the CRA
 """
 
 import asyncio
-from typing import Optional, Dict, Any, List
-from dataclasses import dataclass, asdict
+from datetime import datetime
+from typing import Optional, Dict, Any, List, Union
+from dataclasses import dataclass
 import json
 from pathlib import Path
 import os
@@ -123,15 +124,18 @@ class CRAAPAnalysisResult:
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert result to dictionary format."""
-        result = asdict(self)
-        result['metadata'] = self.metadata.model_dump()
-        result['currency'] = self.currency
-        result['accuracy_text'] = self.accuracy_text
-        result['facts_result'] = self.facts_result.model_dump()
-        result['purpose'] = self.purpose.model_dump()
-        result['author_authority'] = self.author_authority.model_dump() if self.author_authority else None
-        result['publisher_authority'] = self.publisher_authority.model_dump() if self.publisher_authority else None
-        return result
+        return {
+            'url': self.url,
+            'blog_text': self.blog_text,
+            'metadata': self.metadata.model_dump(),
+            'currency': self.currency,
+            'accuracy_text': self.accuracy_text,
+            'facts_result': self.facts_result.model_dump(),
+            'purpose': self.purpose.model_dump(),
+            'author_authority': self.author_authority.model_dump() if self.author_authority else None,
+            'publisher_authority': self.publisher_authority.model_dump() if self.publisher_authority else None,
+            'raw_metadata': self.raw_metadata,
+        }
 
 
 # ============================================================================
@@ -848,7 +852,7 @@ async def analyze_blog_batch(
     urls: List[str],
     analyze_author: bool = True,
     analyze_publisher: bool = True
-) -> List[CRAAPAnalysisResult]:
+) -> List[Union[CRAAPAnalysisResult, BaseException]]:
     """
     Analyze multiple blog posts in parallel.
     
@@ -914,11 +918,14 @@ def print_analysis_report(result: CRAAPAnalysisResult) -> None:
     print(result.currency)
     
     print("\n✓ ACCURACY (Reliability)")
-    print(f"  Has Sources: {result.accuracy.has_sources}")
-    print(f"  Verifiable: {result.accuracy.verifiable}")
-    print(f"  Error Free: {result.accuracy.error_free}")
-    print(f"  Facts vs Opinions: {result.accuracy.facts_vs_opinions}")
+    print(result.accuracy_text)
     
+    if result.facts_result.facts:
+        print("\n🔎 VERIFIED FACTS")
+        for vf in result.facts_result.facts:
+            print(f"  Fact: {vf.fact}")
+            print(f"  Verdict: {vf.verification[:200]}...")
+
     print("\n🎯 PURPOSE (Intent)")
     print(f"  Tone: {result.purpose.tone}")
     print(f"  Style: {result.purpose.style}")
@@ -956,8 +963,6 @@ def save_analysis_to_json(result: CRAAPAnalysisResult, filepath: str = None) -> 
     Returns:
         Absolute path to the saved file
     """
-    from datetime import datetime
-    
     # If no filepath provided, generate from timestamp in configured directory
     if filepath is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

@@ -8,7 +8,7 @@ from datetime import datetime
 import re
 import json
 from pathlib import Path
-from craap_api import analyze_blog, download_blog, CRAAPAnalysisResult, assess_user_relevance, assess_user_purpose_analysis, save_analysis_to_json, load_analysis_from_json, OUTPUT_DIR
+from craap_api import analyze_blog, CRAAPAnalysisResult, assess_user_relevance, assess_user_purpose_analysis, save_analysis_to_json, load_analysis_from_json, OUTPUT_DIR
 
 # Page configuration
 st.set_page_config(
@@ -100,20 +100,12 @@ if page == "Home":
     if analyze_button and url:
         with st.spinner("Downloading and analyzing blog..."):
             try:
-                # Download blog
-                content, metadata = download_blog(url)
-                if content is None:
-                    st.error("Failed to download blog content. Please check the URL.")
-                else:
-                    st.session_state.blog_content = content
-                    st.session_state.blog_url = url
-                    
-                    # Analyze blog
-                    result = asyncio.run(analyze_blog(url, analyze_author=True, analyze_publisher=True))
-                    st.session_state.analysis_result = result
-                    
-                    st.success("✅ Analysis complete! Use the navigation menu to explore results.")
-                    st.rerun()
+                result = asyncio.run(analyze_blog(url, analyze_author=True, analyze_publisher=True))
+                st.session_state.analysis_result = result
+                st.session_state.blog_content = result.blog_text
+                st.session_state.blog_url = url
+                st.success("✅ Analysis complete! Use the navigation menu to explore results.")
+                st.rerun()
             except Exception as e:
                 st.error(f"Error during analysis: {str(e)}")
     
@@ -219,7 +211,7 @@ if page == "Home":
                     st.markdown(f"**{pub_date[:10]}** — _{time_ago}_")
                 else:
                     st.markdown(f"**{pub_date}**")
-            except:
+            except Exception:
                 st.markdown(f"**{pub_date}**")
         else:
             st.markdown("**Not specified**")
@@ -304,7 +296,7 @@ Ask yourself:
                 st.markdown(f"**{pub_date[:10]}** — {time_ago}")
             else:
                 st.markdown(f"**{pub_date}**")
-        except:
+        except Exception:
             st.markdown(f"**{pub_date}**")
     else:
         st.markdown("**Not specified**")
@@ -371,10 +363,11 @@ elif page == "Relevance":
         if not user_answers or user_answers.strip() == "":
             st.warning("⚠️ Please write your answers before assessing.")
         else:
+            blog_content = st.session_state.blog_content or result.blog_text
             with st.spinner("Analyzing relevance of your answers to the blog content..."):
                 try:
                     assessment = asyncio.run(
-                        assess_user_relevance(st.session_state.blog_content, user_answers)
+                        assess_user_relevance(blog_content, user_answers)
                     )
                     
                     st.markdown("---")
@@ -620,10 +613,11 @@ Ask yourself:
         if not user_purpose_answers or user_purpose_answers.strip() == "":
             st.warning("⚠️ Please write your answers before assessing.")
         else:
+            blog_content = st.session_state.blog_content or result.blog_text
             with st.spinner("Analyzing your purpose assessment against the blog content..."):
                 try:
                     assessment = asyncio.run(
-                        assess_user_purpose_analysis(st.session_state.blog_content, user_purpose_answers)
+                        assess_user_purpose_analysis(blog_content, user_purpose_answers)
                     )
                     
                     st.markdown("---")
