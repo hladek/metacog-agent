@@ -549,12 +549,12 @@ elif page == "Accuracy":
     
     st.markdown("Search the internet to verify the following claims from the text.")
 
-    if result.accuracy.verifiable_facts and len(result.accuracy.verifiable_facts) > 0:
-        st.markdown("As a starting poinnt, use the provided links. You can also modify the search query to search evidence against the claim. ")
-        for i, fact in enumerate(result.accuracy.verifiable_facts, 1):
-            st.markdown(f"**{i}.** {fact}")
-            if result.accuracy.search_urls and i <= len(result.accuracy.search_urls):
-                st.markdown(f"🔍 [Verify this fact]({result.accuracy.search_urls[i-1]})")
+    if result.facts_result.facts:
+        st.markdown("As a starting point, use the provided links. You can also modify the search query to search for evidence against the claim.")
+        for i, verified_fact in enumerate(result.facts_result.facts, 1):
+            st.markdown(f"**{i}.** {verified_fact.fact}")
+            if verified_fact.search_url:
+                st.markdown(f"🔍 [Verify this fact]({verified_fact.search_url})")
     
     st.markdown("Pick some facts by yourself and try to verify them from reputable sources, such as Wikipedia, Google Scholar or established media agencies. ")
     st.markdown("---")
@@ -562,48 +562,18 @@ elif page == "Accuracy":
     st.subheader("What AI Agent Analysis Shows")
     
     st.warning("⚠️ **Note:** AI analysis has inherent biases and limitations. The outputs can be difficult to justify and explain. Use this as a supplementary tool, not the sole basis for evaluation.")
-    
-    score = sum([
-        result.accuracy.has_sources,
-        result.accuracy.verifiable,
-        result.accuracy.error_free
-    ])
-    
-    if score == 3:
-        st.success("✅ High accuracy: Content has sources, is verifiable, and appears error-free.")
-    elif score == 2:
-        st.warning("⚠️ Moderate accuracy: Some concerns identified. Review carefully.")
-    else:
-        st.error("❌ Low accuracy: Multiple concerns identified. Use with caution.")
-    
-    st.markdown("---")
-    st.subheader("📈 Key Metrics")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        has_sources = result.accuracy.has_sources
-        st.metric("Has Sources", "Yes" if has_sources else "No", 
-                 delta="Good" if has_sources else "Concerning",
-                 delta_color="normal" if has_sources else "inverse")
-    
-    with col2:
-        verifiable = result.accuracy.verifiable
-        st.metric("Verifiable", "Yes" if verifiable else "No",
-                 delta="Good" if verifiable else "Concerning",
-                 delta_color="normal" if verifiable else "inverse")
-    
-    with col3:
-        error_free = result.accuracy.error_free
-        st.metric("Error Free", "Yes" if error_free else "No",
-                 delta="Good" if error_free else "Concerning",
-                 delta_color="normal" if error_free else "inverse")
-    
-    st.markdown("---")
-    
-    st.subheader("🔍 Facts vs. Opinions")
-    st.markdown(result.accuracy.facts_vs_opinions)
-    
+
+    st.markdown(result.accuracy_text)
+
+    if result.facts_result.facts:
+        st.markdown("---")
+        st.subheader("🔎 Verified Facts")
+        for verified_fact in result.facts_result.facts:
+            with st.expander(verified_fact.fact):
+                st.markdown(verified_fact.verification)
+                if verified_fact.search_url:
+                    st.markdown(f"🔍 [Search to verify]({verified_fact.search_url})")
+
     st.markdown("---")
     
 
