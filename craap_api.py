@@ -130,6 +130,8 @@ class CRAAPAnalysisResult:
     metadata: BlogMetadata
     currency: str
     accuracy: AccuracyInfo
+    accuracy_text: str
+    facts_result: "FactsResult"
     purpose: IntentInfo
     author_authority: Optional[AuthorityVerdict]
     publisher_authority: Optional[PublisherVerdict]
@@ -141,6 +143,8 @@ class CRAAPAnalysisResult:
         result['metadata'] = self.metadata.model_dump()
         result['currency'] = self.currency
         result['accuracy'] = self.accuracy.model_dump()
+        result['accuracy_text'] = self.accuracy_text
+        result['facts_result'] = self.facts_result.model_dump()
         result['purpose'] = self.purpose.model_dump()
         result['author_authority'] = self.author_authority.model_dump() if self.author_authority else None
         result['publisher_authority'] = self.publisher_authority.model_dump() if self.publisher_authority else None
@@ -847,10 +851,12 @@ async def analyze_blog(
     # Run CRAAP analyses in parallel
     currency_task = analyze_currency_html(blog_text)
     accuracy_task = analyze_accuracy(blog_text)
+    accuracy_text_task = analyze_accuracy_text(blog_text)
+    facts_task = provide_facts(blog_text)
     purpose_task = analyze_purpose(blog_text)
     
-    currency_info, accuracy_info, purpose_info = await asyncio.gather(
-        currency_task, accuracy_task, purpose_task
+    currency_info, accuracy_info, accuracy_text_info, facts_result, purpose_info = await asyncio.gather(
+        currency_task, accuracy_task, accuracy_text_task, facts_task, purpose_task
     )
     
     # Analyze authority if requested
@@ -871,6 +877,8 @@ async def analyze_blog(
         metadata=metadata,
         currency=currency_info,
         accuracy=accuracy_info,
+        accuracy_text=accuracy_text_info,
+        facts_result=facts_result,
         purpose=purpose_info,
         author_authority=author_authority,
         publisher_authority=publisher_authority,
@@ -1063,6 +1071,8 @@ def load_analysis_from_json(filepath: str) -> CRAAPAnalysisResult:
     metadata = BlogMetadata(**data['metadata'])
     currency = data['currency']
     accuracy = AccuracyInfo(**data['accuracy'])
+    accuracy_text = data.get('accuracy_text', '')
+    facts_result = FactsResult(**data['facts_result']) if data.get('facts_result') else FactsResult(verifiable_facts=[], search_urls=[])
     purpose = IntentInfo(**data['purpose'])
     
     author_authority = None
@@ -1079,6 +1089,8 @@ def load_analysis_from_json(filepath: str) -> CRAAPAnalysisResult:
         metadata=metadata,
         currency=currency,
         accuracy=accuracy,
+        accuracy_text=accuracy_text,
+        facts_result=facts_result,
         purpose=purpose,
         author_authority=author_authority,
         publisher_authority=publisher_authority,
