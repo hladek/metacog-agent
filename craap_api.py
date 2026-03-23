@@ -53,6 +53,20 @@ class FactsResult(BaseModel):
     search_urls: list[str] = Field(description="Google search URL to verify each corresponding fact")
 
 
+class VerifiedFact(BaseModel):
+    """A single fact with its search URL and web-verified verdict."""
+
+    fact: str = Field(description="The claim extracted from the blog")
+    search_url: str = Field(description="Google search URL to verify the fact")
+    verification: str = Field(description="Markdown fact-check verdict from verify_fact")
+
+
+class VerifiedFactsResult(BaseModel):
+    """Collection of facts enriched with individual verification results."""
+
+    facts: list[VerifiedFact] = Field(description="Facts with their verification verdicts")
+
+
 class CurrencyInfo(BaseModel):
     """Information about the currency and timeliness of blog content."""
     
@@ -131,7 +145,7 @@ class CRAAPAnalysisResult:
     currency: str
     accuracy: AccuracyInfo
     accuracy_text: str
-    facts_result: "FactsResult"
+    facts_result: "VerifiedFactsResult"
     purpose: IntentInfo
     author_authority: Optional[AuthorityVerdict]
     publisher_authority: Optional[PublisherVerdict]
@@ -858,6 +872,21 @@ async def analyze_blog(
     currency_info, accuracy_info, accuracy_text_info, facts_result, purpose_info = await asyncio.gather(
         currency_task, accuracy_task, accuracy_text_task, facts_task, purpose_task
     )
+
+    # Verify each extracted fact in parallel
+    facts = facts_result.verifiable_facts
+    urls = facts_result.search_urls
+    verifications = await asyncio.gather(*[verify_fact(f) for f in facts])
+    verified_facts_result = VerifiedFactsResult(
+        facts=[
+            VerifiedFact(
+                fact=fact,
+                search_url=urls[i] if i < len(urls) else "",
+                verification=verifications[i],
+            )
+            for i, fact in enumerate(facts)
+        ]
+    )
     
     # Analyze authority if requested
     author_authority = None
@@ -878,7 +907,7 @@ async def analyze_blog(
         currency=currency_info,
         accuracy=accuracy_info,
         accuracy_text=accuracy_text_info,
-        facts_result=facts_result,
+        facts_result=verified_facts_result,
         purpose=purpose_info,
         author_authority=author_authority,
         publisher_authority=publisher_authority,
@@ -1072,7 +1101,7 @@ def load_analysis_from_json(filepath: str) -> CRAAPAnalysisResult:
     currency = data['currency']
     accuracy = AccuracyInfo(**data['accuracy'])
     accuracy_text = data.get('accuracy_text', '')
-    facts_result = FactsResult(**data['facts_result']) if data.get('facts_result') else FactsResult(verifiable_facts=[], search_urls=[])
+    facts_result = VerifiedFactsResult(facts=[VerifiedFact(**f) for f in data['facts_result']['facts']]) if data.get('facts_result') else VerifiedFactsResult(facts=[])
     purpose = IntentInfo(**data['purpose'])
     
     author_authority = None
