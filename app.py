@@ -45,14 +45,107 @@ else:
     )
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("""
-### About CRAAP
-**C**urrency - Timeliness  
-**R**elevance - Usefulness  
-**A**uthority - Source credibility  
-**A**ccuracy - Reliability  
-**P**urpose - Intent  
-""")
+
+# Helper to get display name from saved analysis JSON
+def _blog_display_name(filepath: Path) -> str:
+    """Return blog name from JSON metadata, falling back to filename stem."""
+    try:
+        with open(filepath) as fh:
+            data = json.load(fh)
+        name = (data.get("metadata") or {}).get("blog_name") or ""
+        return name.strip() or filepath.stem
+    except Exception:
+        return filepath.stem
+
+# Load saved analyses in sidebar
+st.sidebar.subheader("📂 Load Saved Analysis")
+output_dir = Path(OUTPUT_DIR)
+if output_dir.exists():
+    json_files = sorted(output_dir.glob("*.json"), key=lambda x: x.stat().st_mtime, reverse=True)
+    if json_files:
+        for filepath in json_files:
+            display = _blog_display_name(filepath)
+            if st.sidebar.button(f"📄 {display}", key=f"sidebar_{filepath}", use_container_width=True):
+                try:
+                    with st.spinner("Loading analysis..."):
+                        result = load_analysis_from_json(str(filepath))
+                        st.session_state.analysis_result = result
+                        st.session_state.blog_url = result.url
+                        st.session_state.blog_content = None
+                    st.rerun()
+                except Exception as e:
+                    st.sidebar.error(f"Error loading: {str(e)}")
+    else:
+        st.sidebar.info("No saved analyses found.")
+else:
+    st.sidebar.info("No saved analyses directory found.")
+
+# Blog metainformation in sidebar when analysis is loaded
+if st.session_state.analysis_result:
+    result = st.session_state.analysis_result
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("📋 Blog Metainformation")
+
+    st.sidebar.markdown(f"**🔗 URL**")
+    st.sidebar.code(result.url, language=None)
+
+    st.sidebar.markdown("**👤 Author**")
+    author_name = result.metadata.author_name or "Unknown"
+    if result.metadata.is_anonymous:
+        st.sidebar.markdown("🕶️ Anonymous or unidentified author")
+    else:
+        st.sidebar.markdown(f"✓ **{author_name}**")
+    affiliation = result.metadata.author_affiliation
+    if affiliation and affiliation not in ["Unknown", "None"]:
+        st.sidebar.markdown(f"_Affiliation:_ {affiliation}")
+
+    st.sidebar.markdown("**🏢 Publisher**")
+    publisher = result.metadata.publisher_name or "Not specified"
+    st.sidebar.markdown(f"**{publisher}**")
+    if result.metadata.blog_name and result.metadata.blog_name != publisher:
+        st.sidebar.markdown(f"_Blog:_ {result.metadata.blog_name}")
+
+    st.sidebar.markdown("**📅 Publication Date**")
+    pub_date = result.metadata.publishing_date or "Not specified"
+    if pub_date != "Not specified":
+        try:
+            date_match = re.search(r'\d{4}-\d{2}-\d{2}', pub_date)
+            if date_match:
+                parsed_date = datetime.strptime(date_match.group(), '%Y-%m-%d')
+                days_ago = (datetime.now() - parsed_date).days
+                if days_ago == 0:
+                    time_ago = "Published today"
+                elif days_ago == 1:
+                    time_ago = "Published yesterday"
+                elif days_ago < 7:
+                    time_ago = f"Published {days_ago} days ago"
+                elif days_ago < 30:
+                    weeks = days_ago // 7
+                    time_ago = f"Published {weeks} week{'s' if weeks > 1 else ''} ago"
+                elif days_ago < 365:
+                    months = days_ago // 30
+                    time_ago = f"Published {months} month{'s' if months > 1 else ''} ago"
+                else:
+                    years = days_ago // 365
+                    time_ago = f"Published {years} year{'s' if years > 1 else ''} ago"
+                st.sidebar.markdown(f"**{pub_date[:10]}** — _{time_ago}_")
+            else:
+                st.sidebar.markdown(f"**{pub_date}**")
+        except Exception:
+            st.sidebar.markdown(f"**{pub_date}**")
+    else:
+        st.sidebar.markdown("**Not specified**")
+
+    if st.session_state.blog_content:
+        word_count = len(st.session_state.blog_content.split())
+        read_time = max(1, word_count // 200)
+        st.sidebar.markdown(f"**📝 Content:** {word_count:,} words · ~{read_time} min read")
+
+    st.sidebar.markdown("**📋 Summary**")
+    if result.metadata.summary:
+        st.sidebar.write(result.metadata.summary)
+    else:
+        st.sidebar.info("_No summary available_")
 
 # Home page
 if page == "Home":
@@ -123,127 +216,7 @@ if page == "Home":
                 st.session_state.blog_url = None
                 st.rerun()
     
-    # Load saved analysis section
-    st.markdown("---")
-    st.subheader("📂 Load Saved Analysis")
 
-    def _blog_display_name(filepath: Path) -> str:
-        """Return blog name from JSON metadata, falling back to filename stem."""
-        try:
-            with open(filepath) as fh:
-                data = json.load(fh)
-            name = (data.get("metadata") or {}).get("blog_name") or ""
-            return name.strip() or filepath.stem
-        except Exception:
-            return filepath.stem
-
-    # Get list of saved analysis files
-    output_dir = Path(OUTPUT_DIR)
-    if output_dir.exists():
-        json_files = sorted(output_dir.glob("*.json"), key=lambda x: x.stat().st_mtime, reverse=True)
-
-        if json_files:
-            for filepath in json_files:
-                display = _blog_display_name(filepath)
-                if st.button(f"📄 {display}", key=str(filepath), use_container_width=True):
-                    try:
-                        with st.spinner("Loading analysis..."):
-                            result = load_analysis_from_json(str(filepath))
-                            st.session_state.analysis_result = result
-                            st.session_state.blog_url = result.url
-                            st.session_state.blog_content = None
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"Error loading analysis: {str(e)}")
-        else:
-            st.info("No saved analyses found. Analyze a blog to create one.")
-    else:
-        st.info(f"No saved analyses directory found. Directory will be created at: {OUTPUT_DIR}")
-    
-    # Show current analysis info if available
-    if st.session_state.analysis_result:
-        result = st.session_state.analysis_result
-        st.markdown("---")
-        st.info(f"**Currently analyzing:** {st.session_state.blog_url}")
-        
-        st.markdown("---")
-        st.subheader("📋 Blog Metainformation")
-        
-        # URL Section
-        st.markdown("**🔗 Source URL**")
-        st.code(result.url, language=None)
-        
-        # Author Information
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("**👤 Author**")
-            author_name = result.metadata.author_name or "Unknown"
-            if result.metadata.is_anonymous:
-                st.markdown(f"🕶️ Anonymous or unidentified author")
-            else:
-                st.markdown(f"✓ **{author_name}**")
-            
-            affiliation = result.metadata.author_affiliation
-            if affiliation and affiliation not in ["Unknown", "None"]:
-                st.markdown(f"_Affiliation:_ {affiliation}")
-        
-        with col2:
-            st.markdown("**🏢 Publisher**")
-            publisher = result.metadata.publisher_name or "Not specified"
-            st.markdown(f"**{publisher}**")
-            
-            if result.metadata.blog_name and result.metadata.blog_name != publisher:
-                st.markdown(f"_Blog:_ {result.metadata.blog_name}")
-        
-        # Publication Date
-        st.markdown("**📅 Publication Date**")
-        pub_date = result.metadata.publishing_date or "Not specified"
-        
-        if pub_date != "Not specified":
-            try:
-                date_match = re.search(r'\d{4}-\d{2}-\d{2}', pub_date)
-                if date_match:
-                    parsed_date = datetime.strptime(date_match.group(), '%Y-%m-%d')
-                    days_ago = (datetime.now() - parsed_date).days
-                    
-                    if days_ago == 0:
-                        time_ago = "Published today"
-                    elif days_ago == 1:
-                        time_ago = "Published yesterday"
-                    elif days_ago < 7:
-                        time_ago = f"Published {days_ago} days ago"
-                    elif days_ago < 30:
-                        weeks = days_ago // 7
-                        time_ago = f"Published {weeks} week{'s' if weeks > 1 else ''} ago"
-                    elif days_ago < 365:
-                        months = days_ago // 30
-                        time_ago = f"Published {months} month{'s' if months > 1 else ''} ago"
-                    else:
-                        years = days_ago // 365
-                        time_ago = f"Published {years} year{'s' if years > 1 else ''} ago"
-                    
-                    st.markdown(f"**{pub_date[:10]}** — _{time_ago}_")
-                else:
-                    st.markdown(f"**{pub_date}**")
-            except Exception:
-                st.markdown(f"**{pub_date}**")
-        else:
-            st.markdown("**Not specified**")
-        
-        # Content Information
-        st.markdown("**📝 Content**")
-        if st.session_state.blog_content:
-            word_count = len(st.session_state.blog_content.split())
-            read_time = max(1, word_count // 200)
-            st.markdown(f"Word count: {word_count:,} words · Reading time: ~{read_time} minute{'s' if read_time > 1 else ''}")
-        
-        # Content summary
-        st.markdown("**📋 Summary**")
-        if result.metadata.summary:
-            st.write(result.metadata.summary)
-        else:
-            st.info("_No summary available_")
 
 # Currency page (includes metadata and timeliness)
 elif page == "Currency":
