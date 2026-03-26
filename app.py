@@ -44,8 +44,6 @@ else:
         ["Home", "Currency", "Relevance", "Authority", "Accuracy", "Purpose"]
     )
 
-st.sidebar.markdown("---")
-
 # Helper to get display name from saved analysis JSON
 def _blog_display_name(filepath: Path) -> str:
     """Return blog name from JSON metadata, falling back to filename stem."""
@@ -83,11 +81,14 @@ else:
 # Blog metainformation in sidebar when analysis is loaded
 if st.session_state.analysis_result:
     result = st.session_state.analysis_result
-    st.sidebar.markdown("---")
     st.sidebar.subheader("📋 Blog Metainformation")
 
-    st.sidebar.markdown(f"**🔗 URL**")
-    st.sidebar.code(result.url, language=None)
+    publisher = result.metadata.publisher_name or "Not specified"
+    if result.metadata.blog_name and result.metadata.blog_name != publisher:
+        st.sidebar.markdown(f"[{result.metadata.blog_name}]({result.url})")
+    else:
+        st.sidebar.markdown(f"**🔗 URL**")
+        st.sidebar.code(result.url, language=None)
 
     st.sidebar.markdown("**👤 Author**")
     author_name = result.metadata.author_name or "Unknown"
@@ -100,10 +101,7 @@ if st.session_state.analysis_result:
         st.sidebar.markdown(f"_Affiliation:_ {affiliation}")
 
     st.sidebar.markdown("**🏢 Publisher**")
-    publisher = result.metadata.publisher_name or "Not specified"
     st.sidebar.markdown(f"**{publisher}**")
-    if result.metadata.blog_name and result.metadata.blog_name != publisher:
-        st.sidebar.markdown(f"_Blog:_ {result.metadata.blog_name}")
 
     st.sidebar.markdown("**📅 Publication Date**")
     pub_date = result.metadata.publishing_date or "Not specified"
