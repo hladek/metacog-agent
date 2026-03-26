@@ -21,7 +21,8 @@ import sys
 import trafilatura
 from pydantic import BaseModel, Field
 
-from agents import Agent, Runner, ModelSettings, WebSearchTool, trace
+from openai import AsyncOpenAI
+from agents import Agent, Runner, ModelSettings, WebSearchTool, trace, OpenAIResponsesModel
 
 
 # ============================================================================
@@ -30,6 +31,34 @@ from agents import Agent, Runner, ModelSettings, WebSearchTool, trace
 
 # Output directory for analysis JSON files
 OUTPUT_DIR = os.environ.get("CRAAP_OUTPUT_DIR", "craap_results")
+
+# Model configuration via environment variables.
+# Set CRAAP_BASE_URL and CRAAP_API_KEY to use a custom OpenAI-compatible endpoint
+# (e.g. a local vLLM server). CRAAP_MODEL sets the model name.
+_CRAAP_MODEL = os.environ.get("CRAAP_MODEL", "gpt-4o")
+_CRAAP_BASE_URL = os.environ.get("CRAAP_BASE_URL")
+
+# Build a shared AsyncOpenAI client when a custom endpoint is configured.
+_openai_client: AsyncOpenAI | None = (
+    AsyncOpenAI(
+        base_url=_CRAAP_BASE_URL,
+    )
+    if _CRAAP_BASE_URL
+    else None
+)
+
+
+def get_model() -> "str | OpenAIResponsesModel":
+    """Return the model to use for all agents.
+
+    When CRAAP_BASE_URL is set, wraps the model name in an OpenAIResponsesModel
+    pointing at the custom endpoint (compatible with vLLM and other
+    OpenAI-compatible servers). Otherwise returns the model name as a plain
+    string so the default OpenAI client is used.
+    """
+    if _openai_client is not None:
+        return OpenAIResponsesModel(model=_CRAAP_MODEL, openai_client=_openai_client)
+    return _CRAAP_MODEL
 
 
 # ============================================================================
@@ -210,6 +239,7 @@ Content to analyze:
     extraction_agent = Agent(
         name="blog_metadata_extractor",
         instructions=prompt,
+        model=get_model(),
         model_settings=ModelSettings(),
         output_type=BlogMetadata,
     )
@@ -285,6 +315,7 @@ Respond in this exact Markdown format:
     currency_html_agent = Agent(
         name="currency_html_analyzer",
         instructions=prompt,
+        model=get_model(),
         model_settings=ModelSettings(),
     )
     result = await Runner.run(currency_html_agent, prompt)
@@ -359,6 +390,7 @@ Respond in this exact Markdown format:
     accuracy_text_agent = Agent(
         name="accuracy_text_analyzer",
         instructions=prompt,
+        model=get_model(),
         model_settings=ModelSettings(),
     )
     result = await Runner.run(accuracy_text_agent, prompt)
@@ -420,6 +452,7 @@ Respond in this exact Markdown format:
         name="fact_check_agent",
         tools=[WebSearchTool()],
         instructions=instructions,
+        model=get_model(),
         model_settings=ModelSettings(tool_choice="required"),
     )
 
@@ -458,6 +491,7 @@ Content to analyze:
     extraction_agent = Agent(
         name="facts_extractor",
         instructions=prompt,
+        model=get_model(),
         model_settings=ModelSettings(),
         output_type=FactsResult,
     )
@@ -501,6 +535,7 @@ Content to analyze:
     extraction_agent = Agent(
         name="purpose_extractor",
         instructions=prompt,
+        model=get_model(),
         model_settings=ModelSettings(),
         output_type=IntentInfo,
     )
@@ -539,6 +574,7 @@ Provide a clear assessment in 3-4 sentences, explaining whether this blog is rel
     relevance_agent = Agent(
         name="relevance_assessor",
         instructions=prompt,
+        model=get_model(),
         model_settings=ModelSettings(),
     )
     result = await Runner.run(relevance_agent, prompt)
@@ -577,6 +613,7 @@ Provide a clear assessment in 3-4 sentences, explaining how well the user's anal
     purpose_agent = Agent(
         name="purpose_assessor",
         instructions=prompt,
+        model=get_model(),
         model_settings=ModelSettings(),
     )
     result = await Runner.run(purpose_agent, prompt)
@@ -652,6 +689,7 @@ Conduct an objective, evidence-based investigation of the individual's public re
         name="authority_search_agent",
         tools=[WebSearchTool()],
         instructions=authority_prompt,
+        model=get_model(),
         model_settings=ModelSettings(tool_choice="required"),
         output_type=AuthorityVerdict,
     )
@@ -742,6 +780,7 @@ Conduct comprehensive research to evaluate the publisher's credibility, transpar
         name="publisher_authority_agent",
         tools=[WebSearchTool()],
         instructions=authority_prompt,
+        model=get_model(),
         model_settings=ModelSettings(tool_choice="required"),
         output_type=PublisherVerdict,
     )
