@@ -126,32 +126,33 @@ if page == "Home":
     # Load saved analysis section
     st.markdown("---")
     st.subheader("📂 Load Saved Analysis")
-    
+
+    def _blog_display_name(filepath: Path) -> str:
+        """Return blog name from JSON metadata, falling back to filename stem."""
+        try:
+            with open(filepath) as fh:
+                data = json.load(fh)
+            name = (data.get("metadata") or {}).get("blog_name") or ""
+            return name.strip() or filepath.stem
+        except Exception:
+            return filepath.stem
+
     # Get list of saved analysis files
     output_dir = Path(OUTPUT_DIR)
     if output_dir.exists():
         json_files = sorted(output_dir.glob("*.json"), key=lambda x: x.stat().st_mtime, reverse=True)
-        
+
         if json_files:
-            # Create a selectbox with file names
-            file_options = ["Select a file..."] + [f.name for f in json_files]
-            selected_file = st.selectbox("Choose a saved analysis:", file_options)
-            
-            col_load1, col_load2 = st.columns([1, 4])
-            with col_load1:
-                if st.button("📥 Load Analysis") and selected_file != "Select a file...":
+            for filepath in json_files:
+                display = _blog_display_name(filepath)
+                if st.button(f"📄 {display}", key=str(filepath), use_container_width=True):
                     try:
                         with st.spinner("Loading analysis..."):
-                            filepath = output_dir / selected_file
                             result = load_analysis_from_json(str(filepath))
-                            
                             st.session_state.analysis_result = result
                             st.session_state.blog_url = result.url
-                            # Note: blog_content is not saved in JSON, set to None
                             st.session_state.blog_content = None
-                            
-                            st.success(f"✅ Analysis loaded from {selected_file}")
-                            st.rerun()
+                        st.rerun()
                     except Exception as e:
                         st.error(f"Error loading analysis: {str(e)}")
         else:
