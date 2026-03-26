@@ -2,6 +2,7 @@
 Streamlit application for CRAAP blog analysis.
 """
 
+import os
 import streamlit as st
 import asyncio
 from datetime import datetime
@@ -9,6 +10,9 @@ import re
 import json
 from pathlib import Path
 from craap_api import analyze_blog, CRAAPAnalysisResult, assess_user_relevance, assess_user_purpose_analysis, save_analysis_to_json, load_analysis_from_json, OUTPUT_DIR
+
+# Admin mode is enabled when CRAAP_ADMIN=true
+ADMIN_MODE = os.environ.get("CRAAP_ADMIN", "").lower() == "true"
 
 # Page configuration
 st.set_page_config(
@@ -77,37 +81,49 @@ if page == "Home":
     📡 **[RADAR Framework](https://www.open.edu/openlearn/ocw/mod/oucontent/view.php?id=106020)** - Evaluate sources using Relevance, Authority, Date, Appearance, and Reason
     
     ### Get Started
-    Enter a blog URL below to download and analyze it. Once analyzed, use the navigation 
-    menu to explore each CRAAP dimension.
     """)
-    
+    if ADMIN_MODE:
+        st.markdown("Enter a blog URL below to download and analyze it. Once analyzed, use the navigation menu to explore each CRAAP dimension.")
+    else:
+        st.markdown("Once a blog has been analyzed, use the navigation menu to explore each CRAAP dimension.")
+
     st.markdown("---")
-    
-    # URL input
-    url = st.text_input("Enter blog URL:", placeholder="https://example.com/blog-post")
-    
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        analyze_button = st.button("🚀 Analyze Blog", type="primary")
-    with col2:
+
+    if ADMIN_MODE:
+        # URL input (admin only)
+        url = st.text_input("Enter blog URL:", placeholder="https://example.com/blog-post")
+
+        col1, col2 = st.columns([1, 4])
+        with col1:
+            analyze_button = st.button("🚀 Analyze Blog", type="primary")
+        with col2:
+            if st.session_state.analysis_result:
+                if st.button("🗑️ Clear Analysis"):
+                    st.session_state.analysis_result = None
+                    st.session_state.blog_content = None
+                    st.session_state.blog_url = None
+                    st.rerun()
+
+        if analyze_button and url:
+            with st.spinner("Downloading and analyzing blog..."):
+                try:
+                    result = asyncio.run(analyze_blog(url, analyze_author=True, analyze_publisher=True))
+                    st.session_state.analysis_result = result
+                    st.session_state.blog_content = result.blog_text
+                    st.session_state.blog_url = url
+                    st.success("✅ Analysis complete! Use the navigation menu to explore results.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Error during analysis: {str(e)}")
+    else:
         if st.session_state.analysis_result:
             if st.button("🗑️ Clear Analysis"):
                 st.session_state.analysis_result = None
                 st.session_state.blog_content = None
                 st.session_state.blog_url = None
                 st.rerun()
-    
-    if analyze_button and url:
-        with st.spinner("Downloading and analyzing blog..."):
-            try:
-                result = asyncio.run(analyze_blog(url, analyze_author=True, analyze_publisher=True))
-                st.session_state.analysis_result = result
-                st.session_state.blog_content = result.blog_text
-                st.session_state.blog_url = url
-                st.success("✅ Analysis complete! Use the navigation menu to explore results.")
-                st.rerun()
-            except Exception as e:
-                st.error(f"Error during analysis: {str(e)}")
+        else:
+            st.info("ℹ️ Blog analysis is managed by an administrator.")
     
     # Load saved analysis section
     st.markdown("---")
